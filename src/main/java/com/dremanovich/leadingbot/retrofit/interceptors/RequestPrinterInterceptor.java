@@ -8,7 +8,7 @@ import okhttp3.ResponseBody;
 
 import java.io.IOException;
 
-public class LoggerInterceptor implements Interceptor {
+public class RequestPrinterInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();

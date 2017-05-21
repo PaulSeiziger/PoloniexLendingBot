@@ -3,7 +3,7 @@ package com.dremanovich.leadingbot.bot;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
 import com.dremanovich.leadingbot.retrofit.PostParameterCallAdapterFactory;
 import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
-import com.dremanovich.leadingbot.retrofit.interceptors.LoggerInterceptor;
+import com.dremanovich.leadingbot.retrofit.interceptors.RequestPrinterInterceptor;
 import com.dremanovich.leadingbot.retrofit.interceptors.PostParameterInterceptor;
 import com.dremanovich.leadingbot.retrofit.interceptors.SignInterceptor;
 import com.dremanovich.leadingbot.helpers.NonceReminder;
@@ -52,13 +52,13 @@ public class PoloniexBot {
                 properties.getProperty(secretPropertyName)
         );
 
-        LoggerInterceptor loggerInterceptor = new LoggerInterceptor();
+        RequestPrinterInterceptor requestPrinterInterceptor = new RequestPrinterInterceptor();
         PostParameterInterceptor postParameterInterceptor = new PostParameterInterceptor(annotationRegistration);
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(postParameterInterceptor)
                 .addInterceptor(signInterceptor)
-//                .addInterceptor(loggerInterceptor)
+//                .addInterceptor(requestPrinterInterceptor)
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -84,7 +84,7 @@ public class PoloniexBot {
 
         this.currencies = currencies;
 
-        aggregator.setChangeallback(() -> {
+        aggregator.setChangeCallback(() -> {
             System.out.println(aggregator.getCurrentAvailableBalance());
             System.out.println(aggregator.getCurrentAverageOfferRate());
             return null;

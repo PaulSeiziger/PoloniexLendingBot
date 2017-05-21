@@ -1,5 +1,6 @@
 package com.dremanovich.leadingbot.api;
 
+import com.dremanovich.leadingbot.api.entities.AvailableAccountBalances;
 import com.dremanovich.leadingbot.api.entities.CompleteBalanceEntity;
 import com.dremanovich.leadingbot.api.entities.LoanOrdersEntity;
 import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
@@ -21,4 +22,9 @@ public interface IPoloniexApi {
     @POST("/tradingApi")
     @PostParameter(key = "command", value = "returnCompleteBalances")
     Call<Map<String, CompleteBalanceEntity>> getCompleteBalance(@Field("account") Accounts account, @Field("nonce") long nonce);
+
+    @FormUrlEncoded
+    @POST("/tradingApi")
+    @PostParameter(key = "command", value = "returnAvailableAccountBalances")
+    Call<AvailableAccountBalances> getAvailableAccountBalance(@Field("account") Accounts account, @Field("nonce") long nonce);
 }

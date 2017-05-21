@@ -2,6 +2,7 @@ package com.dremanovich.leadingbot.bot;
 
 import com.dremanovich.leadingbot.api.Accounts;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
+import com.dremanovich.leadingbot.api.entities.AvailableAccountBalances;
 import com.dremanovich.leadingbot.api.entities.CompleteBalanceEntity;
 import com.dremanovich.leadingbot.api.entities.LoanOrdersEntity;
 import retrofit2.Call;
@@ -14,12 +15,9 @@ import java.math.RoundingMode;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/**
- * Created by PavelDremanovich on 21.05.17.
- */
+
 public class AggregatorPoloniexBot implements AutoCloseable {
     private IPoloniexApi api;
 
@@ -41,11 +39,11 @@ public class AggregatorPoloniexBot implements AutoCloseable {
 
      void aggregate(Properties currencies) {
         AverageOfferRateConsumer createAverageOfferTable = new AverageOfferRateConsumer();
-        BalanceListener balanceListener = new BalanceListener();
+        AvailableBalanceListener balanceListener = new AvailableBalanceListener();
 
         offerScannerService.scheduleWithFixedDelay(()->{
             createAverageOfferTable.accept(currencies);
-            api.getCompleteBalance(Accounts.ALL, nonce).enqueue(balanceListener);
+            api.getAvailableAccountBalance(Accounts.LENDING, nonce).enqueue(balanceListener);
 
             nonce++;
         },
@@ -66,7 +64,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
         return currentAvailableBalance;
     }
 
-    void setChangeallback(Callable<Void> callback) {
+    void setChangeCallback(Callable<Void> callback) {
         this.callback = callback;
     }
 
@@ -98,26 +96,15 @@ public class AggregatorPoloniexBot implements AutoCloseable {
     }
 
 
-    private class BalanceListener implements Callback<Map<String, CompleteBalanceEntity>>{
+    private class AvailableBalanceListener implements Callback<AvailableAccountBalances>{
         @Override
-        public void onResponse(Call<Map<String, CompleteBalanceEntity>> call, Response<Map<String, CompleteBalanceEntity>> response) {
+        public void onResponse(Call<AvailableAccountBalances> call, Response<AvailableAccountBalances> response) {
             if (response.isSuccessful()) {
-                Map<String, CompleteBalanceEntity> balances = response.body();
-                if (balances != null) {
-                    for (Map.Entry<String, CompleteBalanceEntity> balance : balances.entrySet()) {
+                AvailableAccountBalances balances = response.body();
+                if (balances != null && balances.getLending() != null) {
 
-                        try {
-                            CompleteBalanceEntity balanceEntity = balance.getValue();
-                            if (balanceEntity != null){
-                                //TODO: Подумай куда запихнуть политику округления
-                                BigDecimal balanceValue = new BigDecimal(balanceEntity.getAvailable()).setScale(8, RoundingMode.HALF_EVEN);
-                                currentAvailableBalance.put(balance.getKey(), balanceValue);
-                            }
-                        }catch (NumberFormatException ex){
-                            ex.printStackTrace();
-                        }
-
-                    }
+                    Map<String, BigDecimal> lendingBalance = balances.getLending();
+                    currentAvailableBalance.putAll(lendingBalance);
 
                     //Notify about changes
                     if (callback != null){
@@ -134,7 +121,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
         }
 
         @Override
-        public void onFailure(Call<Map<String, CompleteBalanceEntity>> call, Throwable throwable) {
+        public void onFailure(Call<AvailableAccountBalances> call, Throwable throwable) {
             throwable.printStackTrace();
         }
     }
