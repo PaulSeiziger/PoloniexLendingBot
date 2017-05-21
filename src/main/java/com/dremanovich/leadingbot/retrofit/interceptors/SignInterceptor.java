@@ -1,8 +1,11 @@
 package com.dremanovich.leadingbot.retrofit.interceptors;
 
+import com.dremanovich.leadingbot.api.NonceReminder;
 import com.dremanovich.leadingbot.helpers.RequestHelper;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -11,26 +14,40 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 
-/**
- * Created by PavelDremanovich on 20.05.17.
- */
+
 public class SignInterceptor implements Interceptor {
 
     private String key;
     private String secret;
+    private NonceReminder nonceReminder;
 
-    public SignInterceptor(String key, String secret) {
+    public SignInterceptor(String key, String secret, NonceReminder nonce) {
         this.key = key;
         this.secret = secret;
+        this.nonceReminder = nonce;
     }
 
     @Override
     public okhttp3.Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
+
+        //TODO: Create Retrofit annotation for sign request
         if (request.method().equals("POST")){
-            request = request.newBuilder()
-                    .addHeader("Key", key)
-                    .addHeader("Sign", generateHMAC(RequestHelper.bodyToString(request), secret)).build();
+            //Add Nonce Parameter
+            nonceReminder.next();
+
+            Request.Builder requestBuilder = request.newBuilder();
+
+            String postBodyString = RequestHelper.bodyToString(request);
+            postBodyString += ((postBodyString.length() > 0) ? "&" : "") +  "nonce=" + nonceReminder.get();
+            requestBuilder.post(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded;charset=UTF-8"), postBodyString));
+
+            //Sign request
+            request = requestBuilder.build();
+            requestBuilder.addHeader("Key", key)
+                    .addHeader("Sign", generateHMAC(RequestHelper.bodyToString(request), secret));
+
+            request = requestBuilder.build();
         }
 
         return chain.proceed(request);

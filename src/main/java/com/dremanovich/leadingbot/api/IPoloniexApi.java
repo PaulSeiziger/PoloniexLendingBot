@@ -16,15 +16,17 @@ public interface IPoloniexApi {
     @FormUrlEncoded
     @POST("/tradingApi")
     @PostParameter(key = "command", value = "returnBalances")
-    Call<Map<String, String>> getBalances(@Field("nonce") long nonce);
+    Call<Map<String, String>> getBalances();
 
     @FormUrlEncoded
     @POST("/tradingApi")
     @PostParameter(key = "command", value = "returnCompleteBalances")
-    Call<Map<String, CompleteBalanceEntity>> getCompleteBalance(@Field("account") Accounts account, @Field("nonce") long nonce);
+    Call<Map<String, CompleteBalanceEntity>> getCompleteBalance(@Field("account") Accounts account);
 
     @FormUrlEncoded
     @POST("/tradingApi")
     @PostParameter(key = "command", value = "returnAvailableAccountBalances")
-    Call<AvailableAccountBalances> getAvailableAccountBalance(@Field("account") Accounts account, @Field("nonce") long nonce);
+    Call<AvailableAccountBalances> getAvailableAccountBalance(@Field("account") Accounts account);
+
+
 }

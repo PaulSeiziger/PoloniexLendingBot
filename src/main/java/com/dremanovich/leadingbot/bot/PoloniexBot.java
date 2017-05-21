@@ -6,7 +6,7 @@ import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
 import com.dremanovich.leadingbot.retrofit.interceptors.RequestPrinterInterceptor;
 import com.dremanovich.leadingbot.retrofit.interceptors.PostParameterInterceptor;
 import com.dremanovich.leadingbot.retrofit.interceptors.SignInterceptor;
-import com.dremanovich.leadingbot.helpers.NonceReminder;
+import com.dremanovich.leadingbot.api.NonceReminder;
 import okhttp3.OkHttpClient;
 
 import retrofit2.*;
@@ -39,6 +39,9 @@ public class PoloniexBot {
             throw new IllegalArgumentException("Not found \"" + secretPropertyName + "\" property!");
         }
 
+        this.reminder = reminder;
+
+
         Map<Integer, PostParameter> annotationRegistration = new HashMap<>();
         List<CallAdapter.Factory> factories = new ArrayList<>();
 
@@ -49,7 +52,8 @@ public class PoloniexBot {
 
         SignInterceptor signInterceptor = new SignInterceptor(
                 properties.getProperty(keyPropertyName),
-                properties.getProperty(secretPropertyName)
+                properties.getProperty(secretPropertyName),
+                reminder
         );
 
         RequestPrinterInterceptor requestPrinterInterceptor = new RequestPrinterInterceptor();
@@ -68,12 +72,11 @@ public class PoloniexBot {
                 .client(client)
                 .build();
 
-        this.reminder = reminder;
-        long nonce = reminder.get();
+
 
         IPoloniexApi api = retrofit.create(IPoloniexApi.class);
 
-        aggregator = new AggregatorPoloniexBot(nonce, api);
+        aggregator = new AggregatorPoloniexBot(api);
     }
 
     public void start(Properties currencies) {
@@ -97,11 +100,11 @@ public class PoloniexBot {
     public void stop() {
         try {
             aggregator.close();
+            reminder.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        reminder.save(aggregator.getNonce());
     }
 
 }

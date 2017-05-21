@@ -1,7 +1,7 @@
 package com.dremanovich.leadingbot;
 
 import com.dremanovich.leadingbot.bot.PoloniexBot;
-import com.dremanovich.leadingbot.helpers.NonceReminder;
+import com.dremanovich.leadingbot.api.NonceReminder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;

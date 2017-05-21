@@ -2,6 +2,7 @@ package com.dremanovich.leadingbot.bot;
 
 import com.dremanovich.leadingbot.api.Accounts;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
+import com.dremanovich.leadingbot.api.NonceReminder;
 import com.dremanovich.leadingbot.api.entities.AvailableAccountBalances;
 import com.dremanovich.leadingbot.api.entities.CompleteBalanceEntity;
 import com.dremanovich.leadingbot.api.entities.LoanOrdersEntity;
@@ -26,12 +27,9 @@ public class AggregatorPoloniexBot implements AutoCloseable {
 
     private ScheduledExecutorService offerScannerService;
 
-    private long nonce = 1;
-
     private Callable<Void> callback;
 
-     AggregatorPoloniexBot(long nonce, IPoloniexApi api) {
-        this.nonce = nonce;
+     AggregatorPoloniexBot(IPoloniexApi api) {
         this.api = api;
 
         offerScannerService = Executors.newSingleThreadScheduledExecutor();
@@ -43,17 +41,11 @@ public class AggregatorPoloniexBot implements AutoCloseable {
 
         offerScannerService.scheduleWithFixedDelay(()->{
             createAverageOfferTable.accept(currencies);
-            api.getAvailableAccountBalance(Accounts.LENDING, nonce).enqueue(balanceListener);
-
-            nonce++;
+            api.getAvailableAccountBalance(Accounts.LENDING).enqueue(balanceListener);
         },
         0,
         10,
         TimeUnit.SECONDS);
-    }
-
-    long getNonce() {
-        return nonce;
     }
 
     ConcurrentHashMap<String, BigDecimal> getCurrentAverageOfferRate() {
