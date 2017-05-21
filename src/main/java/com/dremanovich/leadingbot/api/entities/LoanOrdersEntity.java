@@ -36,8 +36,6 @@ public class LoanOrdersEntity {
             if (offers.size() > 0){
                 rate /= offers.size();
             }
-
-            rate *= 100;
         }
 
         return new BigDecimal(rate).setScale(8, RoundingMode.HALF_EVEN);

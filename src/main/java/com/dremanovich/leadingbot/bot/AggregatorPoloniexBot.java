@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 
 
 public class AggregatorPoloniexBot implements AutoCloseable {
+    private int delaySeconds;
+
     private IPoloniexApi api;
 
     private ConcurrentHashMap<String, BigDecimal> currentAverageOfferRate = new ConcurrentHashMap<>();
@@ -29,8 +31,14 @@ public class AggregatorPoloniexBot implements AutoCloseable {
 
     private Callable<Void> callback;
 
-     AggregatorPoloniexBot(IPoloniexApi api) {
+     AggregatorPoloniexBot(IPoloniexApi api, int delaySeconds) {
         this.api = api;
+
+        if (delaySeconds < 1){
+            this.delaySeconds = 1;
+        }else {
+            this.delaySeconds = delaySeconds;
+        }
 
         offerScannerService = Executors.newSingleThreadScheduledExecutor();
     }
@@ -44,7 +52,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
             api.getAvailableAccountBalance(Accounts.LENDING).enqueue(balanceListener);
         },
         0,
-        10,
+        delaySeconds,
         TimeUnit.SECONDS);
     }
 

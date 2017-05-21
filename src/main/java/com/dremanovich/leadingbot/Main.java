@@ -17,11 +17,14 @@ public class Main {
 
         NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
 
-        PoloniexBot bot = new PoloniexBot(loadBotProperties(), reminder);
+        Properties botProperties = loadBotProperties();
+        Properties currenciesProperties = loadProperties("currencies.properties");
+
+        PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, reminder);
 
         Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
 
-        bot.start(loadProperties("currencies.properties"));
+        bot.start();
 
         Scanner scanner = new Scanner(System.in);
 
