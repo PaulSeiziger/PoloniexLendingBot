@@ -1,14 +1,11 @@
 package com.dremanovich.leadingbot.api;
 
-import com.dremanovich.leadingbot.api.entities.AvailableAccountBalances;
-import com.dremanovich.leadingbot.api.entities.CompleteBalanceEntity;
-import com.dremanovich.leadingbot.api.entities.CreatedLoanOfferResponseEntity;
-import com.dremanovich.leadingbot.api.entities.LoanOrdersEntity;
+import com.dremanovich.leadingbot.api.entities.*;
 import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
 import retrofit2.Call;
 import retrofit2.http.*;
 
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 public interface IPoloniexApi {
@@ -28,7 +25,7 @@ public interface IPoloniexApi {
     @FormUrlEncoded
     @POST("/tradingApi")
     @PostParameter(key = "command", value = "returnAvailableAccountBalances")
-    Call<AvailableAccountBalances> getAvailableAccountBalance(@Field("account") Accounts account);
+    Call<AvailableAccountBalancesEntity> getAvailableAccountBalance(@Field("account") Accounts account);
 
     @FormUrlEncoded
     @POST("/tradingApi")
@@ -40,4 +37,9 @@ public interface IPoloniexApi {
             @Field("autoRenew") int autoRenew,
             @Field("lendingRate") double lendingRate
     );
+
+    @FormUrlEncoded
+    @POST("/tradingApi")
+    @PostParameter(key = "command", value = "returnOpenLoanOffers")
+    Call<Map<String, List<OpenedLoanOfferEntity>>> getOpenedLoanOffers(@Field("dumb") int dumb);
 }

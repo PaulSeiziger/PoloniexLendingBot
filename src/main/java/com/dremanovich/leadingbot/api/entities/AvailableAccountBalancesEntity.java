@@ -3,7 +3,7 @@ package com.dremanovich.leadingbot.api.entities;
 import java.math.BigDecimal;
 import java.util.Map;
 
-public class AvailableAccountBalances {
+public class AvailableAccountBalancesEntity {
     private Map<String, BigDecimal> exchange;
     private Map<String, BigDecimal> margin;
     private Map<String, BigDecimal> lending;

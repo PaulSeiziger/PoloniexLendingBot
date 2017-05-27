@@ -2,7 +2,7 @@
 package com.dremanovich.leadingbot.api.entities;
 
 
-public class Demand {
+public class OfferEntity {
 
     private double rate;
     private double amount;

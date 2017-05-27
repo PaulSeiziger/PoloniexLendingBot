@@ -1,6 +1,7 @@
 package com.dremanovich.leadingbot.bot;
 
 import com.dremanovich.leadingbot.api.IPoloniexApi;
+import com.dremanovich.leadingbot.api.entities.OpenedLoanOfferEntity;
 import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
 import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
 import com.dremanovich.leadingbot.retrofit.PostParameterCallAdapterFactory;
@@ -15,6 +16,7 @@ import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class PoloniexBot {
     private static final String baseUrlPropertyName = "poloniex.bot.base_url";
@@ -23,6 +25,8 @@ public class PoloniexBot {
     private static final String requestDelaySecondsPropertyName = "poloniex.bot.request_delay_seconds";
     private static final String printRequestPropertyName = "poloniex.bot.print_queries";
     private static final String minimizeOfferPercentPropertyName = "poloniex.bot.minimize_offer_percent";
+
+    private static int CONNECT_TIMEOUT = 20;
 
     private NonceReminder reminder;
 
@@ -84,6 +88,8 @@ public class PoloniexBot {
         PostParameterInterceptor postParameterInterceptor = new PostParameterInterceptor(annotationRegistration);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+                .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                 .addInterceptor(postParameterInterceptor)
                 .addInterceptor(signInterceptor);
 
@@ -115,12 +121,16 @@ public class PoloniexBot {
 
     public void start() {
 
-        aggregator.setChangeCallback(() -> {
-            strategy.start(
-                    aggregator.getCurrentAverageOfferRate(),
-                    aggregator.getCurrentAvailableBalance()
-            );
-            return null;
+        aggregator.setChangeCallback((dto) -> {
+            for (Map.Entry<String, List<OpenedLoanOfferEntity>> offersListByCurrency : dto.getOpenedLoanOffers().entrySet()){
+                System.out.println(offersListByCurrency.getKey() + ":");
+                List<OpenedLoanOfferEntity> offersList = offersListByCurrency.getValue();
+
+                for (OpenedLoanOfferEntity offer : offersList) {
+                    System.out.println(offer.getAmount() + "; " + offer.getDate());
+                }
+
+            }
         });
 
         aggregator.aggregate(currencies);

@@ -2,17 +2,13 @@ package com.dremanovich.leadingbot.bot;
 
 import com.dremanovich.leadingbot.api.Accounts;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
-import com.dremanovich.leadingbot.api.NonceReminder;
-import com.dremanovich.leadingbot.api.entities.AvailableAccountBalances;
-import com.dremanovich.leadingbot.api.entities.CompleteBalanceEntity;
+import com.dremanovich.leadingbot.api.entities.AvailableAccountBalancesEntity;
 import com.dremanovich.leadingbot.api.entities.LoanOrdersEntity;
-import retrofit2.Call;
-import retrofit2.Callback;
+import com.dremanovich.leadingbot.api.entities.OpenedLoanOfferEntity;
 import retrofit2.Response;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.*;
@@ -20,16 +16,15 @@ import java.util.function.Consumer;
 
 
 public class AggregatorPoloniexBot implements AutoCloseable {
+    private static final int API_WAIT_MILLIS = 170; //No more 6 requests per second
+
     private int delaySeconds;
 
     private IPoloniexApi api;
 
-    private ConcurrentHashMap<String, BigDecimal> currentAverageOfferRate = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, BigDecimal> currentAvailableBalance = new ConcurrentHashMap<>();
+    private ScheduledExecutorService scannerService;
 
-    private ScheduledExecutorService offerScannerService;
-
-    private Callable<Void> callback;
+    private Consumer<AggregatorDto> callback;
 
      AggregatorPoloniexBot(IPoloniexApi api, int delaySeconds) {
         this.api = api;
@@ -40,89 +35,73 @@ public class AggregatorPoloniexBot implements AutoCloseable {
             this.delaySeconds = delaySeconds;
         }
 
-        offerScannerService = Executors.newSingleThreadScheduledExecutor();
+        scannerService = Executors.newSingleThreadScheduledExecutor();
     }
 
      void aggregate(Properties currencies) {
-        AverageOfferRateConsumer createAverageOfferTable = new AverageOfferRateConsumer();
-        AvailableBalanceListener balanceListener = new AvailableBalanceListener();
+         scannerService.scheduleWithFixedDelay(
+                 ()->{
+                     Map<String, LoanOrdersEntity> loanOrders = new HashMap<>();
+                     Map<String, List<OpenedLoanOfferEntity>> openedLoanOffers = new HashMap<>();
+                     AvailableAccountBalancesEntity availableAccountBalancesEntity = null;
 
-        offerScannerService.scheduleWithFixedDelay(()->{
-            createAverageOfferTable.accept(currencies);
-            api.getAvailableAccountBalance(Accounts.LENDING).enqueue(balanceListener);
-        },
-        0,
-        delaySeconds,
-        TimeUnit.SECONDS);
+                     try {
+                         //Get loan orders
+                         for (Object currencyObject : currencies.values()) {
+
+                                 String currency = (String)currencyObject;
+
+                                 Response<LoanOrdersEntity> loanOrdersEntityResponse = api.getLoanOrders(currency).execute();
+
+                                 if ((loanOrdersEntityResponse != null) && (loanOrdersEntityResponse.isSuccessful())){
+                                     loanOrders.put(currency, loanOrdersEntityResponse.body());
+                                 }
+
+                                 Thread.sleep(API_WAIT_MILLIS);
+                         }
+
+                        //Get balances by accounts
+                        Response<AvailableAccountBalancesEntity> accountBalancesResponse = api.getAvailableAccountBalance(Accounts.LENDING).execute();
+
+                         if ((accountBalancesResponse != null) && (accountBalancesResponse.isSuccessful())){
+                             availableAccountBalancesEntity = accountBalancesResponse.body();
+                         }
+
+                         //Get opened offers
+                         Response<Map<String, List<OpenedLoanOfferEntity>>> openedLoanOffersResponse = api.getOpenedLoanOffers(1).execute();
+
+                         if ((openedLoanOffersResponse != null) && (openedLoanOffersResponse.isSuccessful())){
+                             openedLoanOffers = openedLoanOffersResponse.body();
+                         }
+
+
+                         //Create DTO object
+                         AggregatorDto dto = new AggregatorDto();
+                         dto.setBalances(availableAccountBalancesEntity);
+                         dto.setLoanOrders(loanOrders);
+                         dto.setOpenedLoanOffers(openedLoanOffers);
+
+                         //Send DTO to listener
+                         if (callback != null){
+                             callback.accept(dto);
+                         }
+
+                     } catch (Exception e) {
+                         e.printStackTrace();
+                     }
+                 },
+            0,
+            delaySeconds,
+            TimeUnit.SECONDS
+        );
     }
 
-    ConcurrentHashMap<String, BigDecimal> getCurrentAverageOfferRate() {
-        return currentAverageOfferRate;
-    }
-
-    ConcurrentHashMap<String, BigDecimal> getCurrentAvailableBalance() {
-        return currentAvailableBalance;
-    }
-
-    void setChangeCallback(Callable<Void> callback) {
+    void setChangeCallback(Consumer<AggregatorDto> callback) {
         this.callback = callback;
     }
 
     @Override
     public void close() throws Exception {
-        offerScannerService.shutdownNow();
-    }
-
-
-    private class AverageOfferRateConsumer implements Consumer<Properties>{
-
-        @Override
-        public void accept(Properties currencies) {
-            for (Object currencyObject : currencies.values()) {
-                try {
-                    String currency = (String)currencyObject;
-                    Response response = api.getLoanOrders(currency).execute();
-
-                    LoanOrdersEntity loanOrdersEntity = (LoanOrdersEntity) response.body();
-                    if (loanOrdersEntity != null){
-                            currentAverageOfferRate.put(currency, loanOrdersEntity.getAverageOfferRate());
-                    }
-
-                } catch (ClassCastException| IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-
-    private class AvailableBalanceListener implements Callback<AvailableAccountBalances>{
-        @Override
-        public void onResponse(Call<AvailableAccountBalances> call, Response<AvailableAccountBalances> response) {
-            if (response.isSuccessful()) {
-                AvailableAccountBalances balances = response.body();
-                if (balances != null && balances.getLending() != null) {
-
-                    Map<String, BigDecimal> lendingBalance = balances.getLending();
-                    currentAvailableBalance.putAll(lendingBalance);
-
-                    //Notify about changes
-                    if (callback != null){
-                        try {
-                            callback.call();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } else {
-                System.out.println(response.raw().code());
-            }
-        }
-
-        @Override
-        public void onFailure(Call<AvailableAccountBalances> call, Throwable throwable) {
-            throwable.printStackTrace();
-        }
+        scannerService.shutdownNow();
     }
 }
