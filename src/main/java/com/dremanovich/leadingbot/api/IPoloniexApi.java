@@ -42,4 +42,9 @@ public interface IPoloniexApi {
     @POST("/tradingApi")
     @PostParameter(key = "command", value = "returnOpenLoanOffers")
     Call<Map<String, List<OpenedLoanOfferEntity>>> getOpenedLoanOffers(@Field("dumb") int dumb);
+
+    @FormUrlEncoded
+    @POST("/tradingApi")
+    @PostParameter(key = "command", value = "cancelLoanOffer")
+    Call<CanceledLoanOfferResponseEntity> cancelLoanOffer(@Field("orderNumber") int orderNumber);
 }

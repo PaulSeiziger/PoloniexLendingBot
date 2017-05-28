@@ -7,38 +7,23 @@ import java.util.List;
 
 public class LoanOrdersEntity {
 
-    private List<OfferEntity> offerEntities = null;
-    private List<DemandEntity> demandEntities = null;
+    private List<OfferEntity> offers = null;
+    private List<DemandEntity> demands = null;
 
     public List<OfferEntity> getOfferEntities() {
-        return offerEntities;
+        return offers;
     }
 
     public void setOfferEntities(List<OfferEntity> offerEntities) {
-        this.offerEntities = offerEntities;
+        this.offers = offerEntities;
     }
 
     public List<DemandEntity> getDemandEntities() {
-        return demandEntities;
+        return demands;
     }
 
     public void setDemandEntities(List<DemandEntity> demandEntities) {
-        this.demandEntities = demandEntities;
-    }
-
-    public BigDecimal getAverageOfferRate(){
-        double rate = 0d;
-        if (offerEntities != null){
-            for (OfferEntity offerEntity : offerEntities) {
-                rate += offerEntity.getRate();
-            }
-
-            if (offerEntities.size() > 0){
-                rate /= offerEntities.size();
-            }
-        }
-
-        return new BigDecimal(rate).setScale(8, RoundingMode.HALF_EVEN);
+        this.demands = demandEntities;
     }
 
 }

@@ -1,5 +1,11 @@
 package com.dremanovich.leadingbot.api.entities;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by PavelDremanovich on 22.05.17.
  */
@@ -58,5 +64,19 @@ public class OpenedLoanOfferEntity {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public long getDateTimestamp()
+    {
+        long time = 0;
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date date = dateFormat.parse(this.date);
+            time = date.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return time;
     }
 }

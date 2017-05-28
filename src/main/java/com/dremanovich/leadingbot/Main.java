@@ -2,6 +2,9 @@ package com.dremanovich.leadingbot;
 
 import com.dremanovich.leadingbot.bot.PoloniexBot;
 import com.dremanovich.leadingbot.api.NonceReminder;
+import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
+import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
@@ -19,8 +22,10 @@ public class Main {
 
         Properties botProperties = loadBotProperties();
         Properties currenciesProperties = loadProperties("currencies.properties");
+        Properties strategyProperties = loadProperties("strategy.properties");
 
-        PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, reminder);
+
+        PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, strategyProperties, reminder);
 
         Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
 
@@ -38,25 +43,25 @@ public class Main {
     }
 
     private static Properties loadBotProperties(){
-        final String poloniexKey = "poloniex.bot.key";
-        final String poloniexSecret = "poloniex.bot.secret";
+        final String POLONIEX_KEY = "poloniex.bot.key";
+        final String POLONIEX_SECRET = "poloniex.bot.secret";
 
         Properties properties = loadProperties("bot.properties");
         String key = System.getenv("POLONIEX_KEY");
         String secret = System.getenv("POLONIEX_SECRET");
 
-        if (!properties.containsKey(poloniexKey)){
+        if (!properties.containsKey(POLONIEX_KEY)){
             if (key == null){
                 throw new IllegalArgumentException("Can't find everonment variable POLONIEX_KEY");
             }
-            properties.put(poloniexKey, key);
+            properties.put(POLONIEX_KEY, key);
         }
 
-        if (!properties.containsKey(poloniexSecret)){
+        if (!properties.containsKey(POLONIEX_SECRET)){
             if (secret == null){
                 throw new IllegalArgumentException("Can't find everonment variable POLONIEX_SECRET");
             }
-            properties.put(poloniexSecret, secret);
+            properties.put(POLONIEX_SECRET, secret);
         }
 
         return properties;

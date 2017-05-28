@@ -1,7 +1,6 @@
 package com.dremanovich.leadingbot.bot;
 
 import com.dremanovich.leadingbot.api.IPoloniexApi;
-import com.dremanovich.leadingbot.api.entities.OpenedLoanOfferEntity;
 import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
 import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
 import com.dremanovich.leadingbot.retrofit.PostParameterCallAdapterFactory;
@@ -19,14 +18,14 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class PoloniexBot {
-    private static final String baseUrlPropertyName = "poloniex.bot.base_url";
-    private static final String keyPropertyName = "poloniex.bot.key";
-    private static final String secretPropertyName = "poloniex.bot.secret";
-    private static final String requestDelaySecondsPropertyName = "poloniex.bot.request_delay_seconds";
-    private static final String printRequestPropertyName = "poloniex.bot.print_queries";
-    private static final String minimizeOfferPercentPropertyName = "poloniex.bot.minimize_offer_percent";
+    private static final String BASE_URL_PROPERTY_NAME = "poloniex.bot.base_url";
+    private static final String KEY_PROPERTY_NAME = "poloniex.bot.key";
+    private static final String SECRET_PROPERTY_NAME = "poloniex.bot.secret";
+    private static final String REQUEST_DELAY_SECONDS_PROPERTY_NAME = "poloniex.bot.request_delay_seconds";
+    private static final String PRINT_REQUEST_PROPERTY_NAME = "poloniex.bot.print_queries";
 
-    private static int CONNECT_TIMEOUT = 20;
+
+    private static final int CONNECT_TIMEOUT = 20;
 
     private NonceReminder reminder;
 
@@ -36,30 +35,26 @@ public class PoloniexBot {
 
     private IPoloniexBotLendingStrategy strategy;
 
-    public PoloniexBot(Properties properties, Properties currencies,  NonceReminder reminder) {
+    public PoloniexBot(Properties properties, Properties currencies, Properties strategyProperties,  NonceReminder reminder) {
 
-        if (!properties.containsKey(baseUrlPropertyName)) {
-            throw new IllegalArgumentException("Not found \"" + baseUrlPropertyName + "\" property!");
+        if (!properties.containsKey(BASE_URL_PROPERTY_NAME)) {
+            throw new IllegalArgumentException("Not found \"" + BASE_URL_PROPERTY_NAME + "\" property!");
         }
 
-        if (!properties.containsKey(keyPropertyName)) {
-            throw new IllegalArgumentException("Not found \"" + keyPropertyName + "\" property!");
+        if (!properties.containsKey(KEY_PROPERTY_NAME)) {
+            throw new IllegalArgumentException("Not found \"" + KEY_PROPERTY_NAME + "\" property!");
         }
 
-        if (!properties.containsKey(secretPropertyName)) {
-            throw new IllegalArgumentException("Not found \"" + secretPropertyName + "\" property!");
+        if (!properties.containsKey(SECRET_PROPERTY_NAME)) {
+            throw new IllegalArgumentException("Not found \"" + SECRET_PROPERTY_NAME + "\" property!");
         }
 
-        if (!properties.containsKey(requestDelaySecondsPropertyName)) {
-            throw new IllegalArgumentException("Not found \"" + requestDelaySecondsPropertyName + "\" property!");
+        if (!properties.containsKey(REQUEST_DELAY_SECONDS_PROPERTY_NAME)) {
+            throw new IllegalArgumentException("Not found \"" + REQUEST_DELAY_SECONDS_PROPERTY_NAME + "\" property!");
         }
 
-        if (!properties.containsKey(printRequestPropertyName)) {
-            throw new IllegalArgumentException("Not found \"" + printRequestPropertyName + "\" property!");
-        }
-
-        if (!properties.containsKey(minimizeOfferPercentPropertyName)) {
-            throw new IllegalArgumentException("Not found \"" + minimizeOfferPercentPropertyName + "\" property!");
+        if (!properties.containsKey(PRINT_REQUEST_PROPERTY_NAME)) {
+            throw new IllegalArgumentException("Not found \"" + PRINT_REQUEST_PROPERTY_NAME + "\" property!");
         }
 
         if (currencies == null || currencies.size() == 0){
@@ -79,8 +74,8 @@ public class PoloniexBot {
                 new PostParameterCallAdapterFactory(factories, annotationRegistration);
 
         SignInterceptor signInterceptor = new SignInterceptor(
-                properties.getProperty(keyPropertyName),
-                properties.getProperty(secretPropertyName),
+                properties.getProperty(KEY_PROPERTY_NAME),
+                properties.getProperty(SECRET_PROPERTY_NAME),
                 reminder
         );
 
@@ -93,7 +88,7 @@ public class PoloniexBot {
                 .addInterceptor(postParameterInterceptor)
                 .addInterceptor(signInterceptor);
 
-        if (properties.getProperty(printRequestPropertyName).equalsIgnoreCase("true")){
+        if (properties.getProperty(PRINT_REQUEST_PROPERTY_NAME).equalsIgnoreCase("true")){
             RequestPrinterInterceptor requestPrinterInterceptor = new RequestPrinterInterceptor();
             clientBuilder.addInterceptor(requestPrinterInterceptor);
         }
@@ -101,7 +96,7 @@ public class PoloniexBot {
         OkHttpClient client = clientBuilder.build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(properties.getProperty(baseUrlPropertyName))
+                .baseUrl(properties.getProperty(BASE_URL_PROPERTY_NAME))
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(callAdapterFactory)
                 .client(client)
@@ -111,25 +106,19 @@ public class PoloniexBot {
 
         IPoloniexApi api = retrofit.create(IPoloniexApi.class);
 
-        int delay = Integer.parseInt(properties.getProperty(requestDelaySecondsPropertyName));
+        int delay = Integer.parseInt(properties.getProperty(REQUEST_DELAY_SECONDS_PROPERTY_NAME));
         aggregator = new AggregatorPoloniexBot(api, delay);
 
-        //TODO: replace hardcode strategy
-        int minimizePercent = Integer.parseInt(properties.getProperty(minimizeOfferPercentPropertyName));
-        strategy = new SimpleLendingStrategy(api,currencies,2, minimizePercent);
+        //TODO: Dependency injection
+        strategy = new SimpleLendingStrategy(api,currencies, strategyProperties);
+
     }
 
     public void start() {
 
         aggregator.setChangeCallback((dto) -> {
-            for (Map.Entry<String, List<OpenedLoanOfferEntity>> offersListByCurrency : dto.getOpenedLoanOffers().entrySet()){
-                System.out.println(offersListByCurrency.getKey() + ":");
-                List<OpenedLoanOfferEntity> offersList = offersListByCurrency.getValue();
-
-                for (OpenedLoanOfferEntity offer : offersList) {
-                    System.out.println(offer.getAmount() + "; " + offer.getDate());
-                }
-
+            if (strategy != null){
+                strategy.start(dto);
             }
         });
 
