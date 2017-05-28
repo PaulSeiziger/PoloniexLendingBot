@@ -1,5 +1,6 @@
 package com.dremanovich.leadingbot.bot;
 
+import com.dremanovich.leadingbot.Main;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
 import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
 import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
@@ -11,6 +12,8 @@ import com.dremanovich.leadingbot.retrofit.interceptors.SignInterceptor;
 import com.dremanovich.leadingbot.api.NonceReminder;
 import okhttp3.OkHttpClient;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -25,6 +28,8 @@ public class PoloniexBot {
     private static final String PRINT_REQUEST_PROPERTY_NAME = "poloniex.bot.print_queries";
 
 
+    static final Logger log = LogManager.getLogger(PoloniexBot.class);
+
     private static final int CONNECT_TIMEOUT = 20;
 
     private NonceReminder reminder;
@@ -35,7 +40,8 @@ public class PoloniexBot {
 
     private IPoloniexBotLendingStrategy strategy;
 
-    public PoloniexBot(Properties properties, Properties currencies, Properties strategyProperties,  NonceReminder reminder) {
+
+    public PoloniexBot(Properties properties, Properties currencies, Properties strategyProperties,  NonceReminder reminder) throws IllegalArgumentException {
 
         if (!properties.containsKey(BASE_URL_PROPERTY_NAME)) {
             throw new IllegalArgumentException("Not found \"" + BASE_URL_PROPERTY_NAME + "\" property!");
@@ -131,7 +137,7 @@ public class PoloniexBot {
             aggregator.close();
             reminder.close();
         } catch (Exception e) {
-            e.printStackTrace();
+           log.error(e);
         }
 
     }

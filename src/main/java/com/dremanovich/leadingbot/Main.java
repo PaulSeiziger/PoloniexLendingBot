@@ -2,8 +2,9 @@ package com.dremanovich.leadingbot;
 
 import com.dremanovich.leadingbot.bot.PoloniexBot;
 import com.dremanovich.leadingbot.api.NonceReminder;
-import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
-import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,30 +17,36 @@ import java.util.Scanner;
  * File nonce.txt store counter for Poloniex API
  */
 public class Main {
+    static final Logger log = LogManager.getLogger(Main.class);
+
     public static void main(String[] args) {
 
-        NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
+        try {
+            NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
 
-        Properties botProperties = loadBotProperties();
-        Properties currenciesProperties = loadProperties("currencies.properties");
-        Properties strategyProperties = loadProperties("strategy.properties");
+            Properties botProperties = loadBotProperties();
+            Properties currenciesProperties = loadProperties("currencies.properties");
+            Properties strategyProperties = loadProperties("strategy.properties");
 
+            PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, strategyProperties, reminder);
 
-        PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, strategyProperties, reminder);
+            Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
 
-        Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
+            bot.start();
 
-        bot.start();
+            Scanner scanner = new Scanner(System.in);
 
-        Scanner scanner = new Scanner(System.in);
+            while (scanner.hasNextLine()){
+                String line = scanner.nextLine();
 
-        while (scanner.hasNextLine()){
-            String line = scanner.nextLine();
-
-            if (line.equals("exit")){
-                break;
+                if (line.equals("exit")){
+                    break;
+                }
             }
+        }catch (Exception ex){
+            log.error(ex);
         }
+
     }
 
     private static Properties loadBotProperties(){
@@ -78,7 +85,7 @@ public class Main {
             }
 
         }catch (IOException ex){
-            ex.printStackTrace();
+            log.error(ex);
         }
 
         return prop;

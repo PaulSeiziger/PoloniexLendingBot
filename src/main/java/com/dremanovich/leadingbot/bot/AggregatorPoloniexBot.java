@@ -5,6 +5,8 @@ import com.dremanovich.leadingbot.api.IPoloniexApi;
 import com.dremanovich.leadingbot.api.entities.AvailableAccountBalancesEntity;
 import com.dremanovich.leadingbot.api.entities.LoanOrdersEntity;
 import com.dremanovich.leadingbot.api.entities.OpenedLoanOfferEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import retrofit2.Response;
 
 import java.util.HashMap;
@@ -17,6 +19,9 @@ import java.util.function.Consumer;
 
 public class AggregatorPoloniexBot implements AutoCloseable {
     private static final int API_WAIT_MILLIS = 170; //No more 6 requests per second
+
+    static final Logger log = LogManager.getLogger(AggregatorPoloniexBot.class);
+
 
     private int delaySeconds;
 
@@ -87,7 +92,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
                          }
 
                      } catch (Exception e) {
-                         e.printStackTrace();
+                         log.error(e);
                      }
                  },
             0,

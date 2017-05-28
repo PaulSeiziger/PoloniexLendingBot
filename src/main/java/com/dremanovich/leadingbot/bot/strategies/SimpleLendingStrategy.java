@@ -3,16 +3,18 @@ package com.dremanovich.leadingbot.bot.strategies;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
 import com.dremanovich.leadingbot.api.entities.*;
 import com.dremanovich.leadingbot.bot.AggregatorDto;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 
 public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
     private static final double ABSOLUTE_MINIMUM_LENDING_RATE = 0.00000100;
@@ -21,11 +23,14 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
     private static final String LENDING_DAYS_PROPERTY_NAME = "poloniex.strategy.lending_days";
     private static final String WAIT_BEFORE_REOPEN_OFFER_PROPERTY_NAME = "poloniex.strategy.wait_before_reopen_offer";
 
+    private static final Logger log = LogManager.getLogger(SimpleLendingStrategy.class);
+    private static final Marker financesMarker = new MarkerManager.Log4jMarker("FINANCE");
+
     private Properties currencies;
     private Properties strategyProperties;
     private IPoloniexApi api;
 
-    public SimpleLendingStrategy(IPoloniexApi api, Properties currencies, Properties strategyProperties) {
+    public SimpleLendingStrategy(IPoloniexApi api, Properties currencies, Properties strategyProperties) throws IllegalArgumentException {
         this.api = api;
         this.currencies = currencies;
         this.strategyProperties = strategyProperties;
@@ -51,12 +56,12 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
     public void start(AggregatorDto information) {
 
         if (information.getBalances() == null || information.getBalances().getLending() == null){
-            System.out.println("No balances");
+            log.warn("No balances");
             return;
         }
 
         if (information.getLoanOrders() == null){
-            System.out.println("No loan orders");
+            log.warn("No loan orders");
             return;
         }
 
@@ -69,7 +74,7 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
                 LoanOrdersEntity loanOrders = information.getLoanOrders().get(currency);
 
                 if (loanOrders == null || loanOrders.getOfferEntities() == null){
-                    System.out.println("No loan orders!");
+                    log.warn("No loan orders!");
                     break;
                 }
 
@@ -83,6 +88,8 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
                 // don't apply a reduction factor
                 double lendingRate = calculateAverageRateByOffers(loanOrders.getOfferEntities(), countOffersForAverage);
 
+                boolean jobDone = false;
+
                 //If there is a currency on the balance sheet
                 if (hasFreeBalance) {
                     //Check rate that more than ABSOLUTE_MINIMUM_LENDING_RATE
@@ -90,8 +97,7 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
                         //We expose all available balance and make an offer at the calculated rate
                         int daysLending = Integer.parseInt(strategyProperties.getProperty(LENDING_DAYS_PROPERTY_NAME));
                         double lendingBalance = lendingBalances.get(currency).doubleValue();
-//                        api.createLoanOffer(currency, lendingBalance, daysLending, 0, lendingRate);
-                        System.out.println("Opened offer (by Balance): " + currency + "; " + lendingBalance + "; " + daysLending + "; " + lendingRate);
+                        jobDone = openOffer(currency,lendingBalance, daysLending, lendingRate);
                     }
                 }
 
@@ -108,9 +114,8 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
                             //If there is more than the established limit, then
                             if (currentTime > (openedLoanOfferEntity.getDateTimestamp() + waitingTime)){
                                 //Close the offer
-//                                Response<CanceledLoanOfferResponseEntity> response = api.cancelLoanOffer(openedLoanOfferEntity.getId()).execute();
-                                System.out.println("Close offer with id: " + openedLoanOfferEntity.getId());
-//                                if (response.isSuccessful()){
+                                boolean successClosed = closeOffer(openedLoanOfferEntity.getId());
+                                if (successClosed){
                                     //Apply a reduction factor to the rate
                                     double minimizePercent = Double.parseDouble(strategyProperties.getProperty(MINIMIZE_OFFER_PERCENT_PROPERTY_NAME));
                                     if (minimizePercent > 0.0){
@@ -124,23 +129,22 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
                                         //We open a new offer with the calculated rate and the amount indicated in the closed offer
                                         int daysLending = Integer.parseInt(strategyProperties.getProperty(LENDING_DAYS_PROPERTY_NAME));
                                         double lendingBalance = openedLoanOfferEntity.getAmount();
-//                                        api.createLoanOffer(currency, lendingBalance, daysLending, 0, lendingRate);
-                                        System.out.println("Opened offer: " + currency + "; " + lendingBalance + "; " + daysLending + "; " + lendingRate);
+                                        jobDone = openOffer(currency,lendingBalance, daysLending, lendingRate);
                                     }
-
-//                                }
-
+                                }
                             }
                         }
                     }
                 }
 
+                if (jobDone){
+                    log.trace(financesMarker, "---------------------------------------------------------------\n");
+                }
+
             } catch (Exception e){
-                e.printStackTrace();
+                log.error(e);
             }
         }
-
-        System.out.println("Strategy done!");
     }
 
     private double calculateAverageRateByOffers(List<OfferEntity> offers, int count){
@@ -160,25 +164,53 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
         return average;
     }
 
+    private boolean openOffer(String currency, double lendingBalance, int daysLending, double lendingRate) throws IOException {
+        final Response<CreatedLoanOfferResponseEntity> response = api.createLoanOffer(currency, lendingBalance, daysLending, 0, lendingRate).execute();
 
-    private class CreatedLoanOfferListener implements Callback<CreatedLoanOfferResponseEntity> {
-        @Override
-        public void onResponse(Call<CreatedLoanOfferResponseEntity> call, Response<CreatedLoanOfferResponseEntity> response) {
-            if (response.isSuccessful()) {
-                CreatedLoanOfferResponseEntity loanOfferResponseEntity = response.body();
+        BigDecimal printedLendingRate = new BigDecimal(lendingRate * 100).setScale(8,BigDecimal.ROUND_UNNECESSARY);
 
-                System.out.println(loanOfferResponseEntity.getSuccess());
-                System.out.println(loanOfferResponseEntity.getMessage());
-                System.out.println(loanOfferResponseEntity.getOrderID());
+        if (response.isSuccessful() && response.body().getSuccess() == 1){
+            log.trace(
+                    financesMarker,
+                    "Opened offer: \n" +
+                            "Currency:" + currency +
+                            "; Lending Balance: " + lendingBalance +
+                            "; Days: " + daysLending + "; " +
+                            "Lending rate: " + printedLendingRate
+            );
 
-            } else {
-                System.out.println(response.raw().code());
+            return true;
+        } else {
+            String message = "Can't open offer by rate " + printedLendingRate + " with amount " + lendingBalance ;
+            if (response.body() != null){
+                message += "\nReason: " + response.body().getMessage();
             }
+
+            log.trace(financesMarker, message);
+            log.warn(message);
+
+            return false;
         }
 
-        @Override
-        public void onFailure(Call<CreatedLoanOfferResponseEntity> call, Throwable throwable) {
-            throwable.printStackTrace();
+    }
+
+
+    private boolean closeOffer(int id) throws IOException {
+        Response<CanceledLoanOfferResponseEntity> response = api.cancelLoanOffer(id).execute();
+        if (response.isSuccessful() && response.body().getSuccess() == 1){
+            log.trace(financesMarker, "Close offer with id: " + id);
+            return true;
+        } else {
+            String message = "Can't close offer with id: " + id;
+            if (response.body() != null){
+                message += "\nReason: " + response.body().getMessage();
+            }
+
+            log.trace(financesMarker, message);
+            log.warn(message);
+
+            return false;
         }
     }
+
 }
