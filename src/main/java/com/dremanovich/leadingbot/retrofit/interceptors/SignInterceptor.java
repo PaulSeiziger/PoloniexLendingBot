@@ -1,11 +1,14 @@
 package com.dremanovich.leadingbot.retrofit.interceptors;
 
 import com.dremanovich.leadingbot.api.NonceReminder;
+import com.dremanovich.leadingbot.bot.PoloniexBot;
 import com.dremanovich.leadingbot.helpers.RequestHelper;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -16,6 +19,8 @@ import java.util.Formatter;
 
 
 public class SignInterceptor implements Interceptor {
+
+    private static final Logger log = LogManager.getLogger(SignInterceptor.class);
 
     private String key;
     private String secret;
@@ -68,7 +73,7 @@ public class SignInterceptor implements Interceptor {
         }
         catch ( final NoSuchAlgorithmException | InvalidKeyException e )
         {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
         return result;

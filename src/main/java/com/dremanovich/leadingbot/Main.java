@@ -22,6 +22,7 @@ public class Main {
     public static void main(String[] args) {
 
         try {
+
             NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
 
             Properties botProperties = loadBotProperties();
@@ -44,7 +45,7 @@ public class Main {
                 }
             }
         }catch (Exception ex){
-            log.error(ex);
+            log.fatal(ex.getMessage(),ex);
         }
 
     }
@@ -85,7 +86,7 @@ public class Main {
             }
 
         }catch (IOException ex){
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
         }
 
         return prop;

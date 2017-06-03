@@ -13,6 +13,11 @@
             <!-- Фильтр по маркеру -->
             <MarkerFilter marker="FINANCE" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
+        <!-- Файловый аппендер -->
+        <File name="statistic" fileName="statistics.log">
+            <!-- Фильтр по маркеру -->
+            <MarkerFilter marker="STATISTICS" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
     </Appenders>
     <!-- Секция логгеров -->
     <Loggers>
@@ -23,6 +28,7 @@
         <!-- Логгер нашего класса -->
         <Logger name="com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy" level="trace" additivity="true">
             <AppenderRef ref="finances" level="TRACE"/>
+            <AppenderRef ref="statistic" level="TRACE"/>
         </Logger>
     </Loggers>
 </Configuration>

@@ -1,14 +1,18 @@
 package com.dremanovich.leadingbot.api;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class NonceReminder implements AutoCloseable {
+
+    private static Logger log = LogManager.getLogger(NonceReminder.class);
 
     private AtomicLong nonce = new AtomicLong();
 
@@ -27,7 +31,7 @@ public class NonceReminder implements AutoCloseable {
             }
 
         } catch (NumberFormatException | NullPointerException | IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
     }
@@ -46,7 +50,7 @@ public class NonceReminder implements AutoCloseable {
                 Files.newOutputStream(nonceFile), "utf-8"))) {
             writer.write(nonce.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 }

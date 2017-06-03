@@ -28,7 +28,7 @@ public class PoloniexBot {
     private static final String PRINT_REQUEST_PROPERTY_NAME = "poloniex.bot.print_queries";
 
 
-    static final Logger log = LogManager.getLogger(PoloniexBot.class);
+    private static final Logger log = LogManager.getLogger(PoloniexBot.class);
 
     private static final int CONNECT_TIMEOUT = 20;
 
@@ -137,7 +137,7 @@ public class PoloniexBot {
             aggregator.close();
             reminder.close();
         } catch (Exception e) {
-           log.error(e);
+           log.error(e.getMessage(), e);
         }
 
     }

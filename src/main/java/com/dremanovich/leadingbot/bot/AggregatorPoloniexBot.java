@@ -20,8 +20,7 @@ import java.util.function.Consumer;
 public class AggregatorPoloniexBot implements AutoCloseable {
     private static final int API_WAIT_MILLIS = 170; //No more 6 requests per second
 
-    static final Logger log = LogManager.getLogger(AggregatorPoloniexBot.class);
-
+    private static final Logger log = LogManager.getLogger(AggregatorPoloniexBot.class);
 
     private int delaySeconds;
 
@@ -92,7 +91,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
                          }
 
                      } catch (Exception e) {
-                         log.error(e);
+                         log.debug(e.getMessage(), e);
                      }
                  },
             0,
