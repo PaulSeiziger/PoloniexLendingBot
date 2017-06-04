@@ -3,18 +3,18 @@
     <!-- Секция аппендеров -->
     <Appenders>
         <!-- Файловый аппендер -->
-        <File name="errors" fileName="errors.log">
+        <File name="errors" fileName="logs/errors.log">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
             </PatternLayout>
         </File>
         <!-- Файловый аппендер -->
-        <File name="finances" fileName="finances.log">
+        <File name="finances" fileName="logs/finances.log">
             <!-- Фильтр по маркеру -->
             <MarkerFilter marker="FINANCE" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
         <!-- Файловый аппендер -->
-        <File name="statistic" fileName="statistics.log">
+        <File name="statistic" fileName="logs/statistics.log">
             <!-- Фильтр по маркеру -->
             <MarkerFilter marker="STATISTICS" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
@@ -26,7 +26,7 @@
             <AppenderRef ref="errors" level="DEBUG"/>
         </Root>
         <!-- Логгер нашего класса -->
-        <Logger name="com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy" level="trace" additivity="true">
+        <Logger name="information" level="trace" additivity="true">
             <AppenderRef ref="finances" level="TRACE"/>
             <AppenderRef ref="statistic" level="TRACE"/>
         </Logger>
