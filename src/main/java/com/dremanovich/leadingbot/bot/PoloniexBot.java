@@ -4,6 +4,7 @@ import com.dremanovich.leadingbot.Main;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
 import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
 import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
+import com.dremanovich.leadingbot.helpers.SettingsHelper;
 import com.dremanovich.leadingbot.retrofit.PostParameterCallAdapterFactory;
 import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
 import com.dremanovich.leadingbot.retrofit.interceptors.RequestPrinterInterceptor;
@@ -21,54 +22,21 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class PoloniexBot {
-    private static final String BASE_URL_PROPERTY_NAME = "poloniex.bot.base_url";
-    private static final String KEY_PROPERTY_NAME = "poloniex.bot.key";
-    private static final String SECRET_PROPERTY_NAME = "poloniex.bot.secret";
-    private static final String REQUEST_DELAY_SECONDS_PROPERTY_NAME = "poloniex.bot.request_delay_seconds";
-    private static final String PRINT_REQUEST_PROPERTY_NAME = "poloniex.bot.print_queries";
-
 
     private static final Logger log = LogManager.getLogger(PoloniexBot.class);
-
-    private static final int CONNECT_TIMEOUT = 20;
 
     private NonceReminder reminder;
 
     private AggregatorPoloniexBot aggregator;
 
-    private Properties currencies;
+    private SettingsHelper settings;
 
     private IPoloniexBotLendingStrategy strategy;
 
 
-    public PoloniexBot(Properties properties, Properties currencies, Properties strategyProperties,  NonceReminder reminder) throws IllegalArgumentException {
-
-        if (!properties.containsKey(BASE_URL_PROPERTY_NAME)) {
-            throw new IllegalArgumentException("Not found \"" + BASE_URL_PROPERTY_NAME + "\" property!");
-        }
-
-        if (!properties.containsKey(KEY_PROPERTY_NAME)) {
-            throw new IllegalArgumentException("Not found \"" + KEY_PROPERTY_NAME + "\" property!");
-        }
-
-        if (!properties.containsKey(SECRET_PROPERTY_NAME)) {
-            throw new IllegalArgumentException("Not found \"" + SECRET_PROPERTY_NAME + "\" property!");
-        }
-
-        if (!properties.containsKey(REQUEST_DELAY_SECONDS_PROPERTY_NAME)) {
-            throw new IllegalArgumentException("Not found \"" + REQUEST_DELAY_SECONDS_PROPERTY_NAME + "\" property!");
-        }
-
-        if (!properties.containsKey(PRINT_REQUEST_PROPERTY_NAME)) {
-            throw new IllegalArgumentException("Not found \"" + PRINT_REQUEST_PROPERTY_NAME + "\" property!");
-        }
-
-        if (currencies == null || currencies.size() == 0){
-            throw  new IllegalArgumentException("Not found currencies!");
-        }
-
+    public PoloniexBot(SettingsHelper settings,  NonceReminder reminder) throws IllegalArgumentException {
         this.reminder = reminder;
-        this.currencies = currencies;
+        this.settings = settings;
 
 
         Map<Integer, PostParameter> annotationRegistration = new HashMap<>();
@@ -80,8 +48,8 @@ public class PoloniexBot {
                 new PostParameterCallAdapterFactory(factories, annotationRegistration);
 
         SignInterceptor signInterceptor = new SignInterceptor(
-                properties.getProperty(KEY_PROPERTY_NAME),
-                properties.getProperty(SECRET_PROPERTY_NAME),
+                settings.getKey(),
+                settings.getSecretKey(),
                 reminder
         );
 
@@ -89,12 +57,12 @@ public class PoloniexBot {
         PostParameterInterceptor postParameterInterceptor = new PostParameterInterceptor(annotationRegistration);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                .readTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                .connectTimeout(settings.getConnectTimeout(), TimeUnit.SECONDS)
+                .readTimeout(settings.getConnectTimeout(), TimeUnit.SECONDS)
                 .addInterceptor(postParameterInterceptor)
                 .addInterceptor(signInterceptor);
 
-        if (properties.getProperty(PRINT_REQUEST_PROPERTY_NAME).equalsIgnoreCase("true")){
+        if (settings.isPrintRequest()){
             RequestPrinterInterceptor requestPrinterInterceptor = new RequestPrinterInterceptor();
             clientBuilder.addInterceptor(requestPrinterInterceptor);
         }
@@ -102,7 +70,7 @@ public class PoloniexBot {
         OkHttpClient client = clientBuilder.build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(properties.getProperty(BASE_URL_PROPERTY_NAME))
+                .baseUrl(settings.getUrl())
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(callAdapterFactory)
                 .client(client)
@@ -112,11 +80,10 @@ public class PoloniexBot {
 
         IPoloniexApi api = retrofit.create(IPoloniexApi.class);
 
-        int delay = Integer.parseInt(properties.getProperty(REQUEST_DELAY_SECONDS_PROPERTY_NAME));
-        aggregator = new AggregatorPoloniexBot(api, delay);
+        aggregator = new AggregatorPoloniexBot(api, settings.getRequestDelay());
 
         //TODO: Dependency injection
-        strategy = new SimpleLendingStrategy(api,currencies, strategyProperties);
+        strategy = new SimpleLendingStrategy(api, settings);
 
     }
 
@@ -128,7 +95,7 @@ public class PoloniexBot {
             }
         });
 
-        aggregator.aggregate(currencies);
+        aggregator.aggregate(settings.getCurrencies());
 
     }
 

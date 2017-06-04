@@ -2,10 +2,8 @@ package com.dremanovich.leadingbot.helpers;
 
 
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.dremanovich.leadingbot.settings.SettingsEntity;
+import com.google.gson.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,55 +25,109 @@ public class SettingsHelper {
 
     private static final Logger log = LogManager.getLogger(SettingsHelper.class);
 
-    private JsonObject settingsAsJsonObject;
-
-    private List<String> currenciesCache;
-    private Map<String, BigDecimal> minimumThresholdsCache;
+    private SettingsEntity settings;
 
     public SettingsHelper(String fileName) {
         try (FileReader reader = new FileReader(fileName)){
 
-            JsonParser parser = new JsonParser();
-            JsonElement settings = parser.parse(reader);
+            Gson gson = new Gson();
+            settings = gson.fromJson(reader, SettingsEntity.class);
 
-            settingsAsJsonObject = settings.getAsJsonObject();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
 
-    //TODO: Create Entity object
-
-    public List<String> getCurrencies() {
-
-        if (currenciesCache != null){return currenciesCache;}
-
-        if (settingsAsJsonObject != null){
-            JsonArray arrayElement = settingsAsJsonObject.getAsJsonArray("currencies");
-
-            if (arrayElement != null){
-                List<String> currencies = new ArrayList<>();
-
-                for (JsonElement currencyElement : arrayElement) {
-                    currencies.add(currencyElement.getAsString());
-                }
-
-                currenciesCache = currencies;
-
-                return  currencies;
-            }
+    public String getUrl() {
+        if (settings == null || settings.getBot() == null){
+            return "https://poloniex.com/";
         }
 
-        return new ArrayList<>();
+        return settings.getBot().getUrl();
     }
 
-    public Map<String, BigDecimal> getMinimumThresholds() {
-        if (minimumThresholdsCache != null){return minimumThresholdsCache;}
-
-        if (settingsAsJsonObject != null){
-            JsonObject strategyObject = settingsAsJsonObject.getAsJsonObject("")
+    public int getRequestDelay() {
+        if (settings == null || settings.getBot() == null){
+            return 120;
         }
 
-        return new HashMap<>();
+        return settings.getBot().getRequestDelay();
+    }
+
+    public boolean isPrintRequest() {
+        if (settings == null || settings.getBot() == null){
+            return false;
+        }
+
+        return settings.getBot().isPrintRequest();
+    }
+
+    public int getConnectTimeout(){
+        if (settings == null || settings.getBot() == null){
+            return 30;
+        }
+
+        return settings.getBot().getConnectTimeout();
+    }
+
+    public String getSecretKey() {
+        String secret = System.getenv("POLONIEX_SECRET");
+
+        return (secret == null) ? "" : secret;
+    }
+
+    public String getKey() {
+        String key = System.getenv("POLONIEX_KEY");
+
+        return (key == null) ? "" : key;
+    }
+
+    public List<String> getCurrencies() {
+        if (settings == null){
+            return new ArrayList<>();
+        }
+
+        return settings.getCurrencies();
+    }
+
+    public double getAverageOfferMinimizingPercent(){
+        if (settings == null || settings.getStrategy() == null){
+            return 0.0;
+        }
+
+        return settings.getStrategy().getAverageOfferMinimizingPercent();
+    }
+
+    public int getCountOffersForAverageCalculating() {
+        if (settings == null || settings.getStrategy() == null){
+            return 10;
+        }
+
+        return settings.getStrategy().getCountOffersForAverageCalculating();
+    }
+
+    public int getLendingDays() {
+        if (settings == null || settings.getStrategy() == null){
+            return 2;
+        }
+
+        return settings.getStrategy().getLendingDays();
+    }
+
+    public int getWaitBeforeReopenOffer() {
+        if (settings == null || settings.getStrategy() == null){
+            return 300;
+        }
+
+        return settings.getStrategy().getWaitBeforeReopenOffer();
+    }
+
+
+    public Map<String, BigDecimal> getAverageOfferMinimumThresholds() {
+        if (settings == null || settings.getStrategy() == null){
+            return new HashMap<>();
+        }
+
+        return settings.getStrategy().getAverageOfferMinimumThresholds();
     }
 }

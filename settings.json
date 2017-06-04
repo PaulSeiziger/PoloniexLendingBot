@@ -1,4 +1,10 @@
 {
+  "bot":{
+    "url": "https://poloniex.com/",
+    "requestDelay": 120,
+    "printRequest": false,
+    "connectTimeout": 30
+  },
   "currencies":[
     "BTC",
     "XRP"
@@ -6,9 +12,9 @@
   "strategy":{
     "averageOfferMinimizingPercent": 1,
     "countOffersForAverageCalculating": 15,
-    "lending_days" : 2,
-    "wait_before_reopen_offer": 300,
-    "average_offer_minimum_thresholds":{
+    "lendingDays" : 2,
+    "waitBeforeReopenOffer": 300,
+    "averageOfferMinimumThresholds":{
       "BTC": 0.1,
       "XRP": 0.001
     }

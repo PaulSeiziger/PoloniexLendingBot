@@ -42,7 +42,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
         scannerService = Executors.newSingleThreadScheduledExecutor();
     }
 
-     void aggregate(Properties currencies) {
+     void aggregate(List<String> currencies) {
          scannerService.scheduleWithFixedDelay(
                  ()->{
                      Map<String, LoanOrdersEntity> loanOrders = new HashMap<>();
@@ -51,9 +51,8 @@ public class AggregatorPoloniexBot implements AutoCloseable {
 
                      try {
                          //Get loan orders
-                         for (Object currencyObject : currencies.values()) {
+                         for (String currency : currencies) {
 
-                                 String currency = (String)currencyObject;
 
                                  Response<LoanOrdersEntity> loanOrdersEntityResponse = api.getLoanOrders(currency).execute();
 
