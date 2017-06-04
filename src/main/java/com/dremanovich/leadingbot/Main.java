@@ -2,6 +2,7 @@ package com.dremanovich.leadingbot;
 
 import com.dremanovich.leadingbot.bot.PoloniexBot;
 import com.dremanovich.leadingbot.api.NonceReminder;
+import com.dremanovich.leadingbot.helpers.SettingsHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,33 +18,41 @@ import java.util.Scanner;
  * File nonce.txt store counter for Poloniex API
  */
 public class Main {
-    static final Logger log = LogManager.getLogger(Main.class);
+    private static final Logger log = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
 
         try {
+            System.out.println("\"Poloniex lending bot\" greatings you!");
+            System.out.println("Type \"exit\" for quit from application.");
+            System.out.println("\r\nShow detail information in logs.");
 
-            NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
+            SettingsHelper settingsHelper = new SettingsHelper("settings.json");
 
-            Properties botProperties = loadBotProperties();
-            Properties currenciesProperties = loadProperties("currencies.properties");
-            Properties strategyProperties = loadProperties("strategy.properties");
+            System.out.println(settingsHelper.getCurrencies());
 
-            PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, strategyProperties, reminder);
-
-            Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
-
-            bot.start();
-
-            Scanner scanner = new Scanner(System.in);
-
-            while (scanner.hasNextLine()){
-                String line = scanner.nextLine();
-
-                if (line.equals("exit")){
-                    break;
-                }
-            }
+//            NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
+//
+//            Properties botProperties = loadBotProperties();
+//            Properties currenciesProperties = loadProperties("currencies.properties");
+//            Properties strategyProperties = loadProperties("strategy.properties");
+//
+//            PoloniexBot bot = new PoloniexBot(botProperties, currenciesProperties, strategyProperties, reminder);
+//
+//            Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
+//
+//            bot.start();
+//
+//            Scanner scanner = new Scanner(System.in);
+//
+//            while (scanner.hasNextLine()){
+//                String line = scanner.nextLine();
+//
+//                if (line.equals("exit")){
+//                    bot.stop();
+//                    break;
+//                }
+//            }
         }catch (Exception ex){
             log.fatal(ex.getMessage(),ex);
         }

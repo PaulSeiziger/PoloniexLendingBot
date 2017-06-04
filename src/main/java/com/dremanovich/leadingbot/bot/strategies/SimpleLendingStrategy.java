@@ -142,7 +142,7 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
                                 //Find minimum waiting rate
                                 String minimumLendingRateString = strategyProperties.getProperty(MINIMUM_LENDING_THRESHOLD_PART + currency);
                                 if (minimumLendingRateString != null){
-                                    Double minimumThresholdLendingRate = Double.parseDouble(minimumLendingRateString);
+                                    Double minimumThresholdLendingRate = Double.parseDouble(minimumLendingRateString) / 100;
 
                                     if (lendingRate <= minimumThresholdLendingRate){
                                         continue newCurrency;
@@ -198,6 +198,11 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
 
         BigDecimal printedLendingRate = new BigDecimal(lendingRate * 100).setScale(8,BigDecimal.ROUND_HALF_EVEN);
 
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date date = new Date();
+
+        log.trace(financesMarker, "Date: " + dateFormat.format(date));
+
         if (response.isSuccessful() && response.body().getSuccess() == 1){
             log.trace(
                     financesMarker,
@@ -226,6 +231,11 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
 
     private boolean closeOffer(int id) throws IOException {
         Response<CanceledLoanOfferResponseEntity> response = api.cancelLoanOffer(id).execute();
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date date = new Date();
+
+        log.trace(financesMarker, "Date: " + dateFormat.format(date));
+
         if (response.isSuccessful() && response.body().getSuccess() == 1){
             log.trace(financesMarker, "Close offer with id: " + id);
             return true;
