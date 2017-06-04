@@ -1,0 +1,16 @@
+{
+  "currencies":[
+    "BTC",
+    "XRP"
+  ],
+  "strategy":{
+    "averageOfferMinimizingPercent": 1,
+    "countOffersForAverageCalculating": 15,
+    "lending_days" : 2,
+    "wait_before_reopen_offer": 300,
+    "average_offer_minimum_thresholds":{
+      "BTC": 0.1,
+      "XRP": 0.001
+    }
+  }
+}
