@@ -3,7 +3,8 @@
     "url": "https://poloniex.com/",
     "requestDelay": 120,
     "printRequest": false,
-    "connectTimeout": 30
+    "connectTimeout": 30,
+    "timezone": "UTC"
   },
   "currencies":[
     "BTC",

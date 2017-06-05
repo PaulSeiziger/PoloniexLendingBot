@@ -8,6 +8,7 @@ public class BotSettingsEntity {
     private int requestDelay;
     private boolean printRequest;
     private int connectTimeout;
+    private String timezone;
 
     public String getUrl() {
         return url;
@@ -39,5 +40,13 @@ public class BotSettingsEntity {
 
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 }

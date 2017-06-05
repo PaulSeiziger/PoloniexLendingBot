@@ -62,6 +62,15 @@ public class SettingsHelper {
         return settings.getBot().isPrintRequest();
     }
 
+
+    public String getTimezone() {
+        if (settings == null || settings.getBot() == null){
+            return "UTC";
+        }
+
+        return settings.getBot().getTimezone();
+    }
+
     public int getConnectTimeout(){
         if (settings == null || settings.getBot() == null){
             return 30;

@@ -10,8 +10,12 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.TimeZone;
 
 /**
  * You must provide environment variables POLONIEX_KEY and POLONIEX_SECRET
@@ -28,6 +32,13 @@ public class Main {
             System.out.println("\r\nShow detail information in logs.");
 
             SettingsHelper settingsHelper = new SettingsHelper("settings.json");
+
+            TimeZone.setDefault(TimeZone.getTimeZone(settingsHelper.getTimezone()));
+
+            DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            Date date = new Date();
+
+            System.out.println("\r\nCurrent time: " + dateFormat.format(date));
 
             NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
 
