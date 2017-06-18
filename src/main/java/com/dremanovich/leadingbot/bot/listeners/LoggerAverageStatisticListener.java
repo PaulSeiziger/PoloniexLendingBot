@@ -27,6 +27,8 @@ public class LoggerAverageStatisticListener implements IPoloniexStrategyListener
         this.log = log;
         this.settingsHelper = settingsHelper;
         this.calculator = calculator;
+
+        log.trace(averagesMarker, "День;Дата и время;Валюта;Среднее;Минимальное;Максимальное");
     }
 
     @Override
@@ -62,7 +64,7 @@ public class LoggerAverageStatisticListener implements IPoloniexStrategyListener
                         averageItemCount
                 );
 
-                averageString += average + ";" + min + ";" + max;
+                averageString += average.toPercentString() + ";" + min.toPercentString() + ";" + max.toPercentString();
             }
 
             log.trace(averagesMarker, averageString);

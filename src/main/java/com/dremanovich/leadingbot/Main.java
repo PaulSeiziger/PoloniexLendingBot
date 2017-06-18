@@ -26,14 +26,10 @@ import java.util.TimeZone;
  */
 public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
-    private static final Logger statisticLog = LogManager.getLogger(SimpleLendingStrategy.class);
-    private static final Marker averagesMarker = new MarkerManager.Log4jMarker("AVERAGES");
 
     public static void main(String[] args) {
 
         try {
-
-            statisticLog.trace(averagesMarker, "День;Дата и время;Валюта;Среднее;Минимальное;Максимальное");
 
             System.out.println("\"Poloniex lending bot\" greatings you!");
             System.out.println("Type \"exit\" for quit from application.");

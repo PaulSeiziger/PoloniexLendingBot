@@ -7,8 +7,8 @@ import java.math.RoundingMode;
  * Mutable Object
  */
 public class CurrencyValue implements IDecimalValueType<CurrencyValue>{
-    private static final int size = 8;
-    private static final RoundingMode mode = RoundingMode.HALF_DOWN;
+    private static final int SIZE = 8;
+    private static final RoundingMode MODE = RoundingMode.HALF_DOWN;
 
     public static final CurrencyValue ONE = new CurrencyValue(1);
     public static final CurrencyValue ZERO = new CurrencyValue(0);
@@ -16,13 +16,13 @@ public class CurrencyValue implements IDecimalValueType<CurrencyValue>{
     private BigDecimal value;
 
     public CurrencyValue(String val) {
-        value = (new BigDecimal(val)).setScale(size, mode);
+        value = (new BigDecimal(val)).setScale(SIZE, MODE);
     }
     public CurrencyValue(double val) {
-        value = (new BigDecimal(val)).setScale(size, mode);
+        value = (new BigDecimal(val)).setScale(SIZE, MODE);
     }
     public CurrencyValue(long val) {
-        value = (new BigDecimal(val)).setScale(size, mode);
+        value = (new BigDecimal(val)).setScale(SIZE, MODE);
     }
 
     public CurrencyValue add(CurrencyValue augend) {
@@ -65,7 +65,7 @@ public class CurrencyValue implements IDecimalValueType<CurrencyValue>{
     @Override
     public CurrencyValue divide(CurrencyValue divisor) throws ArithmeticException {
         if (divisor != null){
-            value = value.divide(divisor.toBigDecimal(), mode);
+            value = value.divide(divisor.toBigDecimal(), MODE);
         } else {
             throw new ArithmeticException("Dividing by zero!");
         }
@@ -102,7 +102,7 @@ public class CurrencyValue implements IDecimalValueType<CurrencyValue>{
 
     @Override
     public String toString() {
-        return value.setScale(size, mode).toString();
+        return value.setScale(SIZE, MODE).toString();
     }
 
     public BigDecimal toBigDecimal() {

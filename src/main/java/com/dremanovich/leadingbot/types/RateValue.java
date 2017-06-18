@@ -7,18 +7,21 @@ import java.math.RoundingMode;
  * Created by PavelDremanovich on 17.06.17.
  */
 public class RateValue implements IDecimalValueType<RateValue>{
-    private static final int size = 4;
-    private static final RoundingMode mode = RoundingMode.HALF_DOWN;
+    private static final int SIZE = 4;
+    private static final RoundingMode MODE = RoundingMode.HALF_DOWN;
+
+    private static final BigDecimal HUNDRED = new BigDecimal(100);
+
     private BigDecimal value;
 
     public RateValue(String val) {
-        value = (new BigDecimal(val)).setScale(size, mode);
+        value = (new BigDecimal(val));
     }
     public RateValue(double val) {
-        value = (new BigDecimal(val)).setScale(size, mode);
+        value = (new BigDecimal(val));
     }
     public RateValue(long val) {
-        value = (new BigDecimal(val)).setScale(size, mode);
+        value = (new BigDecimal(val));
     }
 
     public RateValue add(RateValue augend) {
@@ -30,7 +33,6 @@ public class RateValue implements IDecimalValueType<RateValue>{
 
     @Override
     public RateValue add(double augend) {
-
         return add(new RateValue(augend));
     }
 
@@ -61,7 +63,7 @@ public class RateValue implements IDecimalValueType<RateValue>{
     @Override
     public RateValue divide(RateValue divisor) throws ArithmeticException {
         if (divisor != null){
-            value = value.divide(divisor.toBigDecimal(), mode);
+            value = value.divide(divisor.toBigDecimal(), MODE);
         } else {
             throw new ArithmeticException("Dividing by zero!");
         }
@@ -98,11 +100,15 @@ public class RateValue implements IDecimalValueType<RateValue>{
 
     @Override
     public String toString() {
-        return value.setScale(size, mode).toString();
+        return value.setScale(SIZE, MODE).toString();
     }
 
     public BigDecimal toBigDecimal() {
         return value;
+    }
+
+    public String toPercentString() {
+        return value.multiply(HUNDRED).setScale(SIZE, MODE).toString();
     }
 
     @Override
@@ -113,4 +119,6 @@ public class RateValue implements IDecimalValueType<RateValue>{
 
         return value.compareTo(o.toBigDecimal());
     }
+
+
 }

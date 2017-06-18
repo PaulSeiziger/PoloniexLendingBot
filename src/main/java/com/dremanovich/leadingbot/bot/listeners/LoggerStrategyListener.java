@@ -71,7 +71,7 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
                             countOffersForAverage
                     );
 
-                    log.trace(statisticMarker, "Average offer: " + average);
+                    log.trace(statisticMarker, "Average offer: " + average.toPercentString());
                 } else {
                     log.trace(statisticMarker, "No offers!");
                 }
@@ -82,7 +82,7 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
                 List<OpenedLoanOfferEntity> openedLoanOffers = information.getOpenedLoanOffers().get(currency);
                 if (openedLoanOffers != null){
                     for (OpenedLoanOfferEntity offer : openedLoanOffers){
-                        log.trace(statisticMarker, "Rate: " + offer.getRate() + "; Amount: " + offer.getAmount() + "; Duration: " + offer.getDuration() + "; Date" + offer.getDate() );
+                        log.trace(statisticMarker, "Rate: " + offer.getRate().toPercentString() + "; Amount: " + offer.getAmount() + "; Duration: " + offer.getDuration() + "; Date" + offer.getDate() );
                     }
                 } else {
                     log.trace(statisticMarker, "No opened orders!");
@@ -115,10 +115,10 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
                             "Currency:" + currencyName +
                             "; Lending Balance: " + lendingBalance +
                             "; Days: " + daysLending + "; " +
-                            "Lending rate: " + lendingRate
+                            "Lending rate: " + lendingRate.toPercentString()
             );
         } else {
-            String message = "Can't open offer by rate " + lendingRate + " with amount " + lendingBalance ;
+            String message = "Can't open offer by rate " + lendingRate.toPercentString() + " with amount " + lendingBalance ;
             if (infoMessage != null){
                 message += "\nReason: " + infoMessage;
             }

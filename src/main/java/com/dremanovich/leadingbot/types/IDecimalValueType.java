@@ -16,6 +16,7 @@ public interface IDecimalValueType<T> extends Comparable<T> {
     T multiply(T multiplicand);
     T multiply(double multiplicand);
     T multiply(long multiplicand);
+
     @Override
     int compareTo(T o);
 }

@@ -63,7 +63,6 @@ public class PoloniexBot {
                 reminder
         );
 
-
         PostParameterInterceptor postParameterInterceptor = new PostParameterInterceptor(annotationRegistration);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
