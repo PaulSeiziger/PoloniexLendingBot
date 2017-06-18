@@ -2,33 +2,35 @@
 package com.dremanovich.leadingbot.api.entities;
 
 
+import com.dremanovich.leadingbot.types.CurrencyValue;
+
 public class CompleteBalanceEntity {
 
-    private double available;
-    private double onOrders;
-    private double btcValue;
+    private CurrencyValue available;
+    private CurrencyValue onOrders;
+    private CurrencyValue btcValue;
 
-    public double getAvailable() {
+    public CurrencyValue getAvailable() {
         return available;
     }
 
-    public void setAvailable(double available) {
+    public void setAvailable(CurrencyValue available) {
         this.available = available;
     }
 
-    public double getOnOrders() {
+    public CurrencyValue getOnOrders() {
         return onOrders;
     }
 
-    public void setOnOrders(double onOrders) {
+    public void setOnOrders(CurrencyValue onOrders) {
         this.onOrders = onOrders;
     }
 
-    public double getBtcValue() {
+    public CurrencyValue getBtcValue() {
         return btcValue;
     }
 
-    public void setBtcValue(double btcValue) {
+    public void setBtcValue(CurrencyValue btcValue) {
         this.btcValue = btcValue;
     }
 

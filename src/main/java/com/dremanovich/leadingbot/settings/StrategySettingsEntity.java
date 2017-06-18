@@ -1,5 +1,7 @@
 package com.dremanovich.leadingbot.settings;
 
+import com.dremanovich.leadingbot.types.RateValue;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -11,7 +13,7 @@ public class StrategySettingsEntity {
     private int countOffersForAverageCalculating;
     private int lendingDays;
     private int waitBeforeReopenOffer;
-    private Map<String, BigDecimal> averageOfferMinimumThresholds;
+    private Map<String, RateValue> averageOfferMinimumThresholds;
 
     public double getAverageOfferMinimizingPercent() {
         return averageOfferMinimizingPercent;
@@ -45,11 +47,11 @@ public class StrategySettingsEntity {
         this.waitBeforeReopenOffer = waitBeforeReopenOffer;
     }
 
-    public Map<String, BigDecimal> getAverageOfferMinimumThresholds() {
+    public Map<String, RateValue> getAverageOfferMinimumThresholds() {
         return averageOfferMinimumThresholds;
     }
 
-    public void setAverageOfferMinimumThresholds(Map<String, BigDecimal> averageOfferMinimumThresholds) {
+    public void setAverageOfferMinimumThresholds(Map<String, RateValue> averageOfferMinimumThresholds) {
         this.averageOfferMinimumThresholds = averageOfferMinimumThresholds;
     }
 }

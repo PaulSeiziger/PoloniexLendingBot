@@ -53,14 +53,13 @@ public class AggregatorPoloniexBot implements AutoCloseable {
                          //Get loan orders
                          for (String currency : currencies) {
 
+                             Response<LoanOrdersEntity> loanOrdersEntityResponse = api.getLoanOrders(currency).execute();
 
-                                 Response<LoanOrdersEntity> loanOrdersEntityResponse = api.getLoanOrders(currency).execute();
+                             if ((loanOrdersEntityResponse != null) && (loanOrdersEntityResponse.isSuccessful())){
+                                 loanOrders.put(currency, loanOrdersEntityResponse.body());
+                             }
 
-                                 if ((loanOrdersEntityResponse != null) && (loanOrdersEntityResponse.isSuccessful())){
-                                     loanOrders.put(currency, loanOrdersEntityResponse.body());
-                                 }
-
-                                 Thread.sleep(API_WAIT_MILLIS);
+                             Thread.sleep(API_WAIT_MILLIS);
                          }
 
                         //Get balances by accounts

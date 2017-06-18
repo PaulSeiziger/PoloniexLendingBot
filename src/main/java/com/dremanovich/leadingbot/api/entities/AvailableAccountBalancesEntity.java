@@ -1,34 +1,36 @@
 package com.dremanovich.leadingbot.api.entities;
 
+import com.dremanovich.leadingbot.types.CurrencyValue;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
 public class AvailableAccountBalancesEntity {
-    private Map<String, BigDecimal> exchange;
-    private Map<String, BigDecimal> margin;
-    private Map<String, BigDecimal> lending;
+    private Map<String, CurrencyValue> exchange;
+    private Map<String, CurrencyValue> margin;
+    private Map<String, CurrencyValue> lending;
 
-    public Map<String, BigDecimal> getExchange() {
+    public Map<String, CurrencyValue> getExchange() {
         return exchange;
     }
 
-    public void setExchange(Map<String, BigDecimal> exchange) {
+    public void setExchange(Map<String, CurrencyValue> exchange) {
         this.exchange = exchange;
     }
 
-    public Map<String, BigDecimal> getMargin() {
+    public Map<String, CurrencyValue> getMargin() {
         return margin;
     }
 
-    public void setMargin(Map<String, BigDecimal> margin) {
+    public void setMargin(Map<String, CurrencyValue> margin) {
         this.margin = margin;
     }
 
-    public Map<String, BigDecimal> getLending() {
+    public Map<String, CurrencyValue> getLending() {
         return lending;
     }
 
-    public void setLending(Map<String, BigDecimal> lending) {
+    public void setLending(Map<String, CurrencyValue> lending) {
         this.lending = lending;
     }
 }

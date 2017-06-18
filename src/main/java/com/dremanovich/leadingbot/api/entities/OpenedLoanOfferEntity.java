@@ -1,5 +1,8 @@
 package com.dremanovich.leadingbot.api.entities;
 
+import com.dremanovich.leadingbot.types.CurrencyValue;
+import com.dremanovich.leadingbot.types.RateValue;
+
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -12,8 +15,8 @@ import java.util.Date;
 public class OpenedLoanOfferEntity {
 
     private int id;
-    private double rate;
-    private double amount;
+    private RateValue rate;
+    private CurrencyValue amount;
     private int duration;
     private int autoRenew;
     private String date;
@@ -26,19 +29,19 @@ public class OpenedLoanOfferEntity {
         this.id = id;
     }
 
-    public double getRate() {
+    public RateValue getRate() {
         return rate;
     }
 
-    public void setRate(double rate) {
+    public void setRate(RateValue rate) {
         this.rate = rate;
     }
 
-    public double getAmount() {
+    public CurrencyValue getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(CurrencyValue amount) {
         this.amount = amount;
     }
 

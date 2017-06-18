@@ -18,6 +18,11 @@
             <!-- Фильтр по маркеру -->
             <MarkerFilter marker="STATISTICS" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
+        <!-- Файловый аппендер -->
+        <File name="averages" fileName="logs/averages.csv">
+            <!-- Фильтр по маркеру -->
+            <MarkerFilter marker="AVERAGES" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
     </Appenders>
     <!-- Секция логгеров -->
     <Loggers>
@@ -26,9 +31,10 @@
             <AppenderRef ref="errors" level="DEBUG"/>
         </Root>
         <!-- Логгер нашего класса -->
-        <Logger name="information" level="trace" additivity="true">
+        <Logger name="com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy" level="trace" additivity="true">
             <AppenderRef ref="finances" level="TRACE"/>
             <AppenderRef ref="statistic" level="TRACE"/>
+            <AppenderRef ref="averages" level="TRACE"/>
         </Logger>
     </Loggers>
 </Configuration>

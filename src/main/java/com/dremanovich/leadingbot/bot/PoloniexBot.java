@@ -2,6 +2,12 @@ package com.dremanovich.leadingbot.bot;
 
 import com.dremanovich.leadingbot.Main;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
+import com.dremanovich.leadingbot.api.serializers.CurrencyValueSerializer;
+import com.dremanovich.leadingbot.api.serializers.RateValueSerializer;
+import com.dremanovich.leadingbot.bot.calculators.Calculator;
+import com.dremanovich.leadingbot.bot.calculators.ICalculator;
+import com.dremanovich.leadingbot.bot.listeners.LoggerAverageStatisticListener;
+import com.dremanovich.leadingbot.bot.listeners.LoggerStrategyListener;
 import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
 import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
 import com.dremanovich.leadingbot.helpers.SettingsHelper;
@@ -11,6 +17,10 @@ import com.dremanovich.leadingbot.retrofit.interceptors.RequestPrinterIntercepto
 import com.dremanovich.leadingbot.retrofit.interceptors.PostParameterInterceptor;
 import com.dremanovich.leadingbot.retrofit.interceptors.SignInterceptor;
 import com.dremanovich.leadingbot.api.NonceReminder;
+import com.dremanovich.leadingbot.types.CurrencyValue;
+import com.dremanovich.leadingbot.types.RateValue;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import okhttp3.OkHttpClient;
 
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PoloniexBot {
 
-    private static final Logger log = LogManager.getLogger(PoloniexBot.class);
+    private static final Logger log = LogManager.getLogger(SimpleLendingStrategy.class);
 
     private NonceReminder reminder;
 
@@ -69,21 +79,28 @@ public class PoloniexBot {
 
         OkHttpClient client = clientBuilder.build();
 
+        //Gson serializers
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(RateValue.class, new RateValueSerializer())
+                .registerTypeAdapter(CurrencyValue.class, new CurrencyValueSerializer())
+                .create();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(settings.getUrl())
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(callAdapterFactory)
                 .client(client)
                 .build();
-
-
 
         IPoloniexApi api = retrofit.create(IPoloniexApi.class);
 
         aggregator = new AggregatorPoloniexBot(api, settings.getRequestDelay());
 
         //TODO: Dependency injection
-        strategy = new SimpleLendingStrategy(api, settings);
+        ICalculator calculator = new Calculator();
+        strategy = new SimpleLendingStrategy(api, settings, calculator);
+        strategy.addStrategyListener(new LoggerStrategyListener(log, settings, calculator));
+        strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings, calculator));
 
     }
 

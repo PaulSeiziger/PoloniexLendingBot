@@ -3,20 +3,20 @@ package com.dremanovich.leadingbot.helpers;
 
 
 import com.dremanovich.leadingbot.settings.SettingsEntity;
+import com.dremanovich.leadingbot.types.CurrencyValue;
+import com.dremanovich.leadingbot.types.RateValue;
+import com.dremanovich.leadingbot.api.serializers.RateValueSerializer;
 import com.google.gson.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
 
 /**
  * Created by PavelDremanovich on 04.06.17.
@@ -30,7 +30,10 @@ public class SettingsHelper {
     public SettingsHelper(String fileName) {
         try (FileReader reader = new FileReader(fileName)){
 
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(RateValue.class, new RateValueSerializer())
+                    .create();
+
             settings = gson.fromJson(reader, SettingsEntity.class);
 
         } catch (IOException e) {
@@ -132,7 +135,7 @@ public class SettingsHelper {
     }
 
 
-    public Map<String, BigDecimal> getAverageOfferMinimumThresholds() {
+    public Map<String, RateValue> getAverageOfferMinimumThresholds() {
         if (settings == null || settings.getStrategy() == null){
             return new HashMap<>();
         }

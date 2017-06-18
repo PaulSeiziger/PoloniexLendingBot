@@ -1,14 +1,13 @@
 {
   "bot":{
     "url": "https://poloniex.com/",
-    "requestDelay": 120,
-    "printRequest": false,
-    "connectTimeout": 30,
+    "requestDelay": 300,
+    "printRequest": true,
+    "connectTimeout": 40,
     "timezone": "UTC"
   },
   "currencies":[
-    "BTC",
-    "XRP"
+    "BTC"
   ],
   "strategy":{
     "averageOfferMinimizingPercent": 1,

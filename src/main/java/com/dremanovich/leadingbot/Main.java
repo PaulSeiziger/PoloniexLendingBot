@@ -2,9 +2,12 @@ package com.dremanovich.leadingbot;
 
 import com.dremanovich.leadingbot.bot.PoloniexBot;
 import com.dremanovich.leadingbot.api.NonceReminder;
+import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
 import com.dremanovich.leadingbot.helpers.SettingsHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
 
 import java.io.IOException;
@@ -23,10 +26,15 @@ import java.util.TimeZone;
  */
 public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
+    private static final Logger statisticLog = LogManager.getLogger(SimpleLendingStrategy.class);
+    private static final Marker averagesMarker = new MarkerManager.Log4jMarker("AVERAGES");
 
     public static void main(String[] args) {
 
         try {
+
+            statisticLog.trace(averagesMarker, "День;Дата и время;Валюта;Среднее;Минимальное;Максимальное");
+
             System.out.println("\"Poloniex lending bot\" greatings you!");
             System.out.println("Type \"exit\" for quit from application.");
             System.out.println("\r\nShow detail information in logs.");

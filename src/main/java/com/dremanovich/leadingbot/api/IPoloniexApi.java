@@ -2,6 +2,8 @@ package com.dremanovich.leadingbot.api;
 
 import com.dremanovich.leadingbot.api.entities.*;
 import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
+import com.dremanovich.leadingbot.types.CurrencyValue;
+import com.dremanovich.leadingbot.types.RateValue;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -32,10 +34,10 @@ public interface IPoloniexApi {
     @PostParameter(key = "command", value = "createLoanOffer")
     Call<CreatedLoanOfferResponseEntity> createLoanOffer(
             @Field("currency") String currency,
-            @Field("amount") double amount,
+            @Field("amount") CurrencyValue amount,
             @Field("duration") int duration,
             @Field("autoRenew") int autoRenew,
-            @Field("lendingRate") double lendingRate
+            @Field("lendingRate") RateValue lendingRate
     );
 
     @FormUrlEncoded
