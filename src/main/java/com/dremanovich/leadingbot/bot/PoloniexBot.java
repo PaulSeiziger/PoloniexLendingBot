@@ -1,6 +1,5 @@
 package com.dremanovich.leadingbot.bot;
 
-import com.dremanovich.leadingbot.Main;
 import com.dremanovich.leadingbot.api.IPoloniexApi;
 import com.dremanovich.leadingbot.api.serializers.CurrencyValueSerializer;
 import com.dremanovich.leadingbot.api.serializers.RateValueSerializer;
@@ -9,7 +8,7 @@ import com.dremanovich.leadingbot.bot.calculators.ICalculator;
 import com.dremanovich.leadingbot.bot.listeners.LoggerAverageStatisticListener;
 import com.dremanovich.leadingbot.bot.listeners.LoggerStrategyListener;
 import com.dremanovich.leadingbot.bot.strategies.IPoloniexBotLendingStrategy;
-import com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy;
+import com.dremanovich.leadingbot.bot.strategies.AverageLendingStrategy;
 import com.dremanovich.leadingbot.helpers.SettingsHelper;
 import com.dremanovich.leadingbot.retrofit.PostParameterCallAdapterFactory;
 import com.dremanovich.leadingbot.retrofit.annotations.PostParameter;
@@ -23,7 +22,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import okhttp3.OkHttpClient;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -98,7 +96,7 @@ public class PoloniexBot {
 
         //TODO: Dependency injection
         ICalculator calculator = new Calculator();
-        strategy = new SimpleLendingStrategy(log, api, settings, calculator);
+        strategy = new AverageLendingStrategy(log, api, settings, calculator);
         strategy.addStrategyListener(new LoggerStrategyListener(log, settings, calculator));
         strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings, calculator));
 
