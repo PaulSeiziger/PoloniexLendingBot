@@ -47,7 +47,7 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
             DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             Date date = new Date();
 
-            log.trace(statisticMarker, "Date: " + dateFormat.format(date));
+            log.trace(statisticMarker, "\r\nDate: " + dateFormat.format(date));
             log.trace(statisticMarker, "Balances:\r\n");
 
             Map<String, CurrencyValue> lendingBalances = information.getBalances().getLending();
@@ -90,7 +90,7 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
                 log.trace(statisticMarker, "-----------------------------------------------------------------\r\n");
             }
 
-            log.trace(statisticMarker, "=============================================================================\r\n\r\n");
+            log.trace(statisticMarker, "=============================================================================\r\n");
         }
     }
 

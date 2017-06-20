@@ -29,12 +29,9 @@
         <!-- Корневой логгер -->
         <Root level="trace">
             <AppenderRef ref="errors" level="DEBUG"/>
-        </Root>
-        <!-- Логгер нашего класса -->
-        <Logger name="com.dremanovich.leadingbot.bot.strategies.SimpleLendingStrategy" level="trace" additivity="true">
             <AppenderRef ref="finances" level="TRACE"/>
             <AppenderRef ref="statistic" level="TRACE"/>
             <AppenderRef ref="averages" level="TRACE"/>
-        </Logger>
+        </Root>
     </Loggers>
 </Configuration>

@@ -21,8 +21,7 @@ import java.util.*;
 public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
     private static final RateValue ABSOLUTE_MINIMUM_LENDING_RATE = new RateValue(0.0000001);
 
-    //TODO: Refactor set logger via setter
-    private static final Logger log = LogManager.getLogger(SimpleLendingStrategy.class);
+    private Logger log;
 
     private IPoloniexApi api;
     private SettingsHelper settings;
@@ -30,10 +29,11 @@ public class SimpleLendingStrategy implements IPoloniexBotLendingStrategy {
 
     private HashSet<IPoloniexStrategyListener> listeners = new HashSet<>();
 
-    public SimpleLendingStrategy(IPoloniexApi api, SettingsHelper settings, ICalculator calculator){
+    public SimpleLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator){
         this.api = api;
         this.settings = settings;
         this.calculator = calculator;
+        this.log = log;
     }
 
     @Override

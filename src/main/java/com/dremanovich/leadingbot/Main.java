@@ -35,7 +35,7 @@ public class Main {
             System.out.println("Type \"exit\" for quit from application.");
             System.out.println("\r\nShow detail information in logs.");
 
-            SettingsHelper settingsHelper = new SettingsHelper("settings.json");
+            SettingsHelper settingsHelper = new SettingsHelper(log, "settings.json");
 
             TimeZone.setDefault(TimeZone.getTimeZone(settingsHelper.getTimezone()));
 
@@ -46,7 +46,7 @@ public class Main {
 
             NonceReminder reminder = new NonceReminder(Paths.get("nonce.txt"));
 
-            PoloniexBot bot = new PoloniexBot(settingsHelper, reminder);
+            PoloniexBot bot = new PoloniexBot(log, settingsHelper, reminder);
 
             Runtime.getRuntime().addShutdownHook(new Thread(bot::stop));
 

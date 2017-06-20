@@ -33,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 public class PoloniexBot {
 
-    private static final Logger log = LogManager.getLogger(SimpleLendingStrategy.class);
-
     private NonceReminder reminder;
 
     private AggregatorPoloniexBot aggregator;
@@ -43,10 +41,13 @@ public class PoloniexBot {
 
     private IPoloniexBotLendingStrategy strategy;
 
+    private Logger log;
 
-    public PoloniexBot(SettingsHelper settings,  NonceReminder reminder) throws IllegalArgumentException {
+
+    public PoloniexBot(Logger log, SettingsHelper settings,  NonceReminder reminder) throws IllegalArgumentException {
         this.reminder = reminder;
         this.settings = settings;
+        this.log = log;
 
 
         Map<Integer, PostParameter> annotationRegistration = new HashMap<>();
@@ -93,11 +94,11 @@ public class PoloniexBot {
 
         IPoloniexApi api = retrofit.create(IPoloniexApi.class);
 
-        aggregator = new AggregatorPoloniexBot(api, settings.getRequestDelay());
+        aggregator = new AggregatorPoloniexBot(log, api, settings.getRequestDelay());
 
         //TODO: Dependency injection
         ICalculator calculator = new Calculator();
-        strategy = new SimpleLendingStrategy(api, settings, calculator);
+        strategy = new SimpleLendingStrategy(log, api, settings, calculator);
         strategy.addStrategyListener(new LoggerStrategyListener(log, settings, calculator));
         strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings, calculator));
 

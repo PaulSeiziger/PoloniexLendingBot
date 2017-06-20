@@ -23,11 +23,13 @@ import java.util.Map;
  */
 public class SettingsHelper {
 
-    private static final Logger log = LogManager.getLogger(SettingsHelper.class);
+    private Logger log;
 
     private SettingsEntity settings;
 
-    public SettingsHelper(String fileName) {
+    public SettingsHelper(Logger log, String fileName) {
+        this.log = log;
+
         try (FileReader reader = new FileReader(fileName)){
 
             Gson gson = new GsonBuilder()
