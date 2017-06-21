@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.dremanovich</groupId>
-    <artifactId>leading-bot</artifactId>
+    <artifactId>lending-bot</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>jar</packaging>
@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.dremanovich.leadingbot.Main</mainClass>
+                            <mainClass>com.dremanovich.lendingbot.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
