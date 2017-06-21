@@ -15,8 +15,7 @@
     "lendingDays" : 2,
     "waitBeforeReopenOffer": 300,
     "averageOfferMinimumThresholds":{
-      "BTC": 0.1,
-      "XRP": 0.001
+      "BTC": 0.2
     }
   }
 }
