@@ -30,6 +30,13 @@ public abstract class AbstractStrategy implements IPoloniexBotLendingStrategy {
     protected HashSet<IPoloniexStrategyListener> listeners = new HashSet<>();
     protected Logger log;
 
+    public AbstractStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator){
+        this.api = api;
+        this.settings = settings;
+        this.calculator = calculator;
+        this.log = log;
+    }
+
     abstract void hasFreeBalance(AggregatorDto information, CurrencyValue balance, String currencyName);
 
     abstract void hasOpenedOffers(AggregatorDto information, OpenedLoanOfferEntity openedLoanOfferEntity, String currencyName);

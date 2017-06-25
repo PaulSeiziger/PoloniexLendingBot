@@ -13,11 +13,8 @@ import java.io.IOException;
 
 public class AverageLendingStrategy extends AbstractStrategy{
 
-    public AverageLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator){
-        this.api = api;
-        this.settings = settings;
-        this.calculator = calculator;
-        this.log = log;
+    public AverageLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator) {
+        super(log, api, settings, calculator);
     }
 
     @Override
@@ -82,7 +79,7 @@ public class AverageLendingStrategy extends AbstractStrategy{
         }
     }
 
-    private RateValue calculateRate(AggregatorDto information, String currencyName) {
+    protected RateValue calculateRate(AggregatorDto information, String currencyName) {
         LoanOrdersEntity loanOrders = information.getLoanOrders().get(currencyName);
 
         //Calculate the interest rate based on the average value based on the first n items,

@@ -10,10 +10,11 @@
     "BTC"
   ],
   "strategy":{
+    "className": "com.dremanovich.lendingbot.bot.strategies.MaxLendingStrategy",
     "averageOfferMinimizingPercent": 1,
     "countOffersForAverageCalculating": 15,
     "lendingDays" : 2,
-    "waitBeforeReopenOffer": 300,
+    "waitBeforeReopenOffer": 600,
     "averageOfferMinimumThresholds":{
       "BTC": 0.2
     }

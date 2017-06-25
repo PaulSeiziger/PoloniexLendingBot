@@ -12,7 +12,16 @@ public class StrategySettingsEntity {
     private int countOffersForAverageCalculating;
     private int lendingDays;
     private int waitBeforeReopenOffer;
+    private String className;
     private Map<String, RateValue> averageOfferMinimumThresholds;
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
 
     public double getAverageOfferMinimizingPercent() {
         return averageOfferMinimizingPercent;

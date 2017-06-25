@@ -26,6 +26,8 @@ import org.apache.logging.log4j.Logger;
 import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -94,11 +96,19 @@ public class PoloniexBot {
 
         aggregator = new AggregatorPoloniexBot(log, api, settings.getRequestDelay());
 
-        //TODO: Dependency injection
         ICalculator calculator = new Calculator();
-        strategy = new AverageLendingStrategy(log, api, settings, calculator);
-        strategy.addStrategyListener(new LoggerStrategyListener(log, settings, calculator));
-        strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings, calculator));
+        Class<IPoloniexBotLendingStrategy> loadedClass = settings.getStrategyClass();
+        Constructor<?> ctor = null;
+        try {
+
+            ctor = loadedClass.getConstructor(Logger.class, IPoloniexApi.class, SettingsHelper.class, ICalculator.class);
+            strategy = (IPoloniexBotLendingStrategy)ctor.newInstance(log, api, settings, calculator);
+            strategy.addStrategyListener(new LoggerStrategyListener(log, settings, calculator));
+            strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings, calculator));
+
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
 
     }
 

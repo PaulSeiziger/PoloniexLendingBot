@@ -2,6 +2,7 @@ package com.dremanovich.lendingbot.helpers;
 
 
 
+import com.dremanovich.lendingbot.bot.strategies.IPoloniexBotLendingStrategy;
 import com.dremanovich.lendingbot.settings.SettingsEntity;
 import com.dremanovich.lendingbot.types.RateValue;
 import com.dremanovich.lendingbot.api.serializers.RateValueSerializer;
@@ -39,6 +40,20 @@ public class SettingsHelper {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    public Class<IPoloniexBotLendingStrategy> getStrategyClass(){
+        Class<IPoloniexBotLendingStrategy> loadedClass = null;
+
+        if (settings != null && settings.getStrategy() != null && settings.getStrategy().getClassName() != null){
+            try {
+                loadedClass = (Class<IPoloniexBotLendingStrategy>) Class.forName(settings.getStrategy().getClassName());
+            }catch (ClassCastException|ClassNotFoundException ex){
+                log.error(ex.getMessage(), ex);
+            }
+        }
+
+        return loadedClass;
     }
 
     public String getUrl() {
