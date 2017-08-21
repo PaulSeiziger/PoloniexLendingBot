@@ -1,9 +1,9 @@
 {
   "bot":{
     "url": "https://poloniex.com/",
-    "requestDelay": 300,
-    "printRequest": true,
-    "connectTimeout": 40,
+    "requestDelay": 600,
+    "printRequest": false,
+    "connectTimeout": 180,
     "timezone": "UTC"
   },
   "currencies":[
@@ -14,7 +14,7 @@
     "averageOfferMinimizingPercent": 1,
     "countOffersForAverageCalculating": 15,
     "lendingDays" : 2,
-    "waitBeforeReopenOffer": 600,
+    "waitBeforeReopenOffer": 1200,
     "averageOfferMinimumThresholds":{
       "BTC": 0.2
     }
