@@ -1,5 +1,6 @@
 package com.dremanovich.lendingbot.bot.listeners;
 
+import com.dremanovich.lendingbot.api.entities.AvailableAccountBalancesEntity;
 import com.dremanovich.lendingbot.api.entities.OpenedLoanOfferEntity;
 import com.dremanovich.lendingbot.bot.AggregatorDto;
 import com.dremanovich.lendingbot.bot.calculators.ICalculator;
@@ -40,7 +41,9 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
             return;
         }
 
-        if (information.getBalances().getLending() != null){
+        AvailableAccountBalancesEntity balances = information.getBalances();
+
+        if ((balances != null) && (balances.getLending() != null)){
             DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             Date date = new Date();
 
