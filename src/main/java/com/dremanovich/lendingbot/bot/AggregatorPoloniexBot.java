@@ -8,6 +8,7 @@ import com.dremanovich.lendingbot.api.entities.OpenedLoanOfferEntity;
 import org.apache.logging.log4j.Logger;
 import retrofit2.Response;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,43 +45,12 @@ public class AggregatorPoloniexBot implements AutoCloseable {
      void aggregate(List<String> currencies) {
          scannerService.scheduleWithFixedDelay(
                  ()->{
-                     Map<String, LoanOrdersEntity> loanOrders = new HashMap<>();
-                     Map<String, List<OpenedLoanOfferEntity>> openedLoanOffers = new HashMap<>();
-                     AvailableAccountBalancesEntity availableAccountBalancesEntity = null;
-
                      try {
-                         //Get loan orders
-                         for (String currency : currencies) {
-
-                             Response<LoanOrdersEntity> loanOrdersEntityResponse = api.getLoanOrders(currency).execute();
-
-                             if ((loanOrdersEntityResponse != null) && (loanOrdersEntityResponse.isSuccessful())){
-                                 loanOrders.put(currency, loanOrdersEntityResponse.body());
-                             }
-
-                             Thread.sleep(API_WAIT_MILLIS);
-                         }
-
-                        //Get balances by accounts
-                        Response<AvailableAccountBalancesEntity> accountBalancesResponse = api.getAvailableAccountBalance(Accounts.LENDING).execute();
-
-                         if ((accountBalancesResponse != null) && (accountBalancesResponse.isSuccessful())){
-                             availableAccountBalancesEntity = accountBalancesResponse.body();
-                         }
-
-                         //Get opened offers
-                         Response<Map<String, List<OpenedLoanOfferEntity>>> openedLoanOffersResponse = api.getOpenedLoanOffers(1).execute();
-
-                         if ((openedLoanOffersResponse != null) && (openedLoanOffersResponse.isSuccessful())){
-                             openedLoanOffers = openedLoanOffersResponse.body();
-                         }
-
-
                          //Create DTO object
                          AggregatorDto dto = new AggregatorDto();
-                         dto.setBalances(availableAccountBalancesEntity);
-                         dto.setLoanOrders(loanOrders);
-                         dto.setOpenedLoanOffers(openedLoanOffers);
+                         dto.setBalances(getBalances());
+                         dto.setLoanOrders(getLoanOrders(currencies));
+                         dto.setOpenedLoanOffers(getOpenedOffers());
 
                          //Send DTO to listener
                          if (callback != null){
@@ -104,5 +74,50 @@ public class AggregatorPoloniexBot implements AutoCloseable {
     @Override
     public void close() throws Exception {
         scannerService.shutdownNow();
+    }
+
+
+    protected Map<String, LoanOrdersEntity> getLoanOrders(List<String> currencies){
+        Map<String, LoanOrdersEntity> loanOrders = new HashMap<>();
+
+        //Get loan orders
+        for (String currency : currencies) {
+            Response<LoanOrdersEntity> loanOrdersEntityResponse = null;
+            try {
+                loanOrdersEntityResponse = api.getLoanOrders(currency).execute();
+
+                if ((loanOrdersEntityResponse != null) && (loanOrdersEntityResponse.isSuccessful())){
+                    loanOrders.put(currency, loanOrdersEntityResponse.body());
+                }
+
+                Thread.sleep(API_WAIT_MILLIS);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return loanOrders;
+    }
+
+    protected AvailableAccountBalancesEntity getBalances() throws IOException {
+        AvailableAccountBalancesEntity availableAccountBalancesEntity = null;
+            Response<AvailableAccountBalancesEntity> accountBalancesResponse = api.getAvailableAccountBalance(Accounts.LENDING).execute();
+
+            if ((accountBalancesResponse != null) && (accountBalancesResponse.isSuccessful())){
+                availableAccountBalancesEntity = accountBalancesResponse.body();
+            }
+        return availableAccountBalancesEntity;
+    }
+
+    protected Map<String, List<OpenedLoanOfferEntity>> getOpenedOffers() throws IOException {
+        Map<String, List<OpenedLoanOfferEntity>> openedLoanOffers = new HashMap<>();
+            Response<Map<String, List<OpenedLoanOfferEntity>>> openedLoanOffersResponse = api.getOpenedLoanOffers(1).execute();
+
+            if ((openedLoanOffersResponse != null) && (openedLoanOffersResponse.isSuccessful())){
+                openedLoanOffers = openedLoanOffersResponse.body();
+            }
+
+        return openedLoanOffers;
     }
 }

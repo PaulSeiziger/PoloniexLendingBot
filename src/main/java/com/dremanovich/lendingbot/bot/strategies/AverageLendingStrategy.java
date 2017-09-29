@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class AverageLendingStrategy extends AbstractStrategy{
 
-    public AverageLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator) {
+    public AverageLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator){
         super(log, api, settings, calculator);
     }
 
