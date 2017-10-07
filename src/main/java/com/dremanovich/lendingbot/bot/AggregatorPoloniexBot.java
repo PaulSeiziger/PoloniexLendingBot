@@ -27,7 +27,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
 
     private ScheduledExecutorService scannerService;
 
-    private Consumer<AggregatorDto> callback;
+    private Consumer<CurrencyInformationIterator> callback;
 
      AggregatorPoloniexBot(Logger log, IPoloniexApi api, int delaySeconds) {
         this.api = api;
@@ -42,19 +42,20 @@ public class AggregatorPoloniexBot implements AutoCloseable {
         scannerService = Executors.newSingleThreadScheduledExecutor();
     }
 
-     void aggregate(List<String> currencies) {
+     public void aggregate(List<String> currencies) {
          scannerService.scheduleWithFixedDelay(
                  ()->{
                      try {
                          //Create DTO object
-                         AggregatorDto dto = new AggregatorDto();
-                         dto.setBalances(getBalances());
-                         dto.setLoanOrders(getLoanOrders(currencies));
-                         dto.setOpenedLoanOffers(getOpenedOffers());
+                         CurrencyInformationIterator iterator = new CurrencyInformationIterator(
+                                 getLoanOrders(currencies),
+                                 getBalances(),
+                                 getOpenedOffers()
+                         );
 
                          //Send DTO to listener
                          if (callback != null){
-                             callback.accept(dto);
+                             callback.accept(iterator);
                          }
 
                      } catch (Exception e) {
@@ -67,7 +68,7 @@ public class AggregatorPoloniexBot implements AutoCloseable {
         );
     }
 
-    void setChangeCallback(Consumer<AggregatorDto> callback) {
+    public void setChangeCallback(Consumer<CurrencyInformationIterator> callback) {
         this.callback = callback;
     }
 

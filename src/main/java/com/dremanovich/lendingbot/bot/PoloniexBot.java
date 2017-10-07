@@ -3,12 +3,9 @@ package com.dremanovich.lendingbot.bot;
 import com.dremanovich.lendingbot.api.IPoloniexApi;
 import com.dremanovich.lendingbot.api.serializers.CurrencyValueSerializer;
 import com.dremanovich.lendingbot.api.serializers.RateValueSerializer;
-import com.dremanovich.lendingbot.bot.calculators.Calculator;
-import com.dremanovich.lendingbot.bot.calculators.ICalculator;
 import com.dremanovich.lendingbot.bot.listeners.LoggerAverageStatisticListener;
 import com.dremanovich.lendingbot.bot.listeners.LoggerStrategyListener;
 import com.dremanovich.lendingbot.bot.strategies.IPoloniexBotLendingStrategy;
-import com.dremanovich.lendingbot.bot.strategies.AverageLendingStrategy;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
 import com.dremanovich.lendingbot.retrofit.PostParameterCallAdapterFactory;
 import com.dremanovich.lendingbot.retrofit.annotations.PostParameter;
@@ -96,15 +93,14 @@ public class PoloniexBot {
 
         aggregator = new AggregatorPoloniexBot(log, api, settings.getRequestDelay());
 
-        ICalculator calculator = new Calculator();
         Class<IPoloniexBotLendingStrategy> loadedClass = settings.getStrategyClass();
         Constructor<?> ctor = null;
         try {
 
-            ctor = loadedClass.getConstructor(Logger.class, IPoloniexApi.class, SettingsHelper.class, ICalculator.class);
-            strategy = (IPoloniexBotLendingStrategy)ctor.newInstance(log, api, settings, calculator);
-            strategy.addStrategyListener(new LoggerStrategyListener(log, settings, calculator));
-            strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings, calculator));
+            ctor = loadedClass.getConstructor(Logger.class, IPoloniexApi.class, SettingsHelper.class);
+            strategy = (IPoloniexBotLendingStrategy)ctor.newInstance(log, api, settings);
+            strategy.addStrategyListener(new LoggerStrategyListener(log, settings));
+            strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings));
 
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             e.printStackTrace();

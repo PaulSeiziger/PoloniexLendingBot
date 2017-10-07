@@ -1,12 +1,8 @@
 package com.dremanovich.lendingbot.bot.strategies;
 
 import com.dremanovich.lendingbot.api.IPoloniexApi;
-import com.dremanovich.lendingbot.api.entities.LoanOrdersEntity;
-import com.dremanovich.lendingbot.api.entities.OpenedLoanOfferEntity;
-import com.dremanovich.lendingbot.bot.AggregatorDto;
-import com.dremanovich.lendingbot.bot.calculators.ICalculator;
+import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
-import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;
 import org.apache.logging.log4j.Logger;
 
@@ -16,18 +12,15 @@ import org.apache.logging.log4j.Logger;
 public class MaxLendingStrategy extends AverageLendingStrategy
 {
 
-    public MaxLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator) {
-        super(log, api, settings, calculator);
+    public MaxLendingStrategy(Logger log, IPoloniexApi api, SettingsHelper settings) {
+        super(log, api, settings);
     }
 
     @Override
-    protected RateValue calculateRate(AggregatorDto information, String currencyName) {
-        LoanOrdersEntity loanOrders = information.getLoanOrders().get(currencyName);
-
-        //Calculate the interest rate based on the average value based on the first n items,
+    protected RateValue calculateRate(CurrencyInformationItem item) {
+        //Calculate the interest rate based on the max value based on the first n items,
         // don't apply a reduction factor
-        return calculator.calculateMaxRateByOffers(
-                loanOrders.getOfferEntities(),
+        return item.calculateMaxRateByOffers(
                 settings.getCountOffersForAverageCalculating()
         );
     }

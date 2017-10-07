@@ -1,7 +1,8 @@
 package com.dremanovich.lendingbot.bot.listeners;
 
-import com.dremanovich.lendingbot.bot.AggregatorDto;
-import com.dremanovich.lendingbot.bot.calculators.ICalculator;
+import com.dremanovich.lendingbot.api.entities.OfferEntity;
+import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
+import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
 import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;
@@ -12,27 +13,25 @@ import org.apache.logging.log4j.MarkerManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 
 public class LoggerAverageStatisticListener implements IPoloniexStrategyListener {
     private static final Marker averagesMarker = new MarkerManager.Log4jMarker("AVERAGES");
     private static final int averageItemCount = 20;
 
-
     private Logger log;
     private SettingsHelper settingsHelper;
-    private ICalculator calculator;
 
-    public LoggerAverageStatisticListener(Logger log, SettingsHelper settingsHelper, ICalculator calculator) {
+    public LoggerAverageStatisticListener(Logger log, SettingsHelper settingsHelper) {
         this.log = log;
         this.settingsHelper = settingsHelper;
-        this.calculator = calculator;
 
         log.trace(averagesMarker, "День;Дата и время;Валюта;Среднее;Минимальное;Максимальное");
     }
 
     @Override
-    public void onStart(AggregatorDto information) {
+    public void onStart(CurrencyInformationIterator information) {
         if (information == null){
             return;
         }
@@ -45,31 +44,14 @@ public class LoggerAverageStatisticListener implements IPoloniexStrategyListener
 
         averageString += dateFormat.format(date) + ';';
 
-        for (String currency : settingsHelper.getCurrencies()) {
-            averageString += currency + ';';
-
-            if ((information.getLoanOrders() != null) && (information.getLoanOrders().get(currency) != null)){
-                RateValue average = calculator.calculateAverageRateByOffers(
-                        information.getLoanOrders().get(currency).getOfferEntities(),
-                        averageItemCount
-                );
-
-                RateValue min = calculator.calculateMinRateByOffers(
-                        information.getLoanOrders().get(currency).getOfferEntities(),
-                        averageItemCount
-                );
-
-                RateValue max = calculator.calculateMaxRateByOffers(
-                        information.getLoanOrders().get(currency).getOfferEntities(),
-                        averageItemCount
-                );
-
-                averageString += average.toPercentString() + ";" + min.toPercentString() + ";" + max.toPercentString();
-            }
-
-            log.trace(averagesMarker, averageString);
-
+        while (information.hasNext()) {
+            CurrencyInformationItem item = information.next();
+            averageString = item.calculateAverageRateByOffers(averageItemCount).toPercentString() + ";" +
+                    item.calculateMinRateByOffers(averageItemCount).toPercentString() + ";" +
+                    item.calculateMaxRateByOffers(averageItemCount).toPercentString();
         }
+
+        log.trace(averagesMarker, averageString);
     }
 
     @Override
@@ -81,12 +63,12 @@ public class LoggerAverageStatisticListener implements IPoloniexStrategyListener
             RateValue lendingRate,
             String infoMessage
     ) {
-
+        //Not implemented
     }
 
     @Override
     public void onClosedOffer(boolean success, int id, String infoMessage) {
-
+        //Not implemented
     }
 
 }

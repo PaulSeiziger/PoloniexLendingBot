@@ -9,10 +9,11 @@ public final class Retrofit2Platform {
     }
 
     public static Factory defaultCallAdapterFactory(Executor executor) {
-        if (executor == null) {
-            executor = defaultCallbackExecutor();
+        Executor defaultExecutor = executor;
+        if (defaultExecutor == null) {
+            defaultExecutor = defaultCallbackExecutor();
         }
-        return Platform.get().defaultCallAdapterFactory(executor);
+        return Platform.get().defaultCallAdapterFactory(defaultExecutor);
     }
 
     public static Executor defaultCallbackExecutor() {

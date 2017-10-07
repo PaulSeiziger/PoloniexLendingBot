@@ -51,7 +51,7 @@ public class Main {
             while (scanner.hasNextLine()){
                 String line = scanner.nextLine();
 
-                if (line.equals("exit")){
+                if ("exit".equals(line)){
                     bot.stop();
                     break;
                 }

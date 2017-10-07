@@ -2,12 +2,9 @@ package com.dremanovich.lendingbot.bot.strategies;
 
 
 import com.dremanovich.lendingbot.api.IPoloniexApi;
-import com.dremanovich.lendingbot.api.entities.CanceledLoanOfferResponseEntity;
-import com.dremanovich.lendingbot.api.entities.CreatedLoanOfferResponseEntity;
-import com.dremanovich.lendingbot.api.entities.LoanOrdersEntity;
-import com.dremanovich.lendingbot.api.entities.OpenedLoanOfferEntity;
-import com.dremanovich.lendingbot.bot.AggregatorDto;
-import com.dremanovich.lendingbot.bot.calculators.ICalculator;
+import com.dremanovich.lendingbot.api.entities.*;
+import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
+import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
 import com.dremanovich.lendingbot.bot.listeners.IPoloniexStrategyListener;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
 import com.dremanovich.lendingbot.types.CurrencyValue;
@@ -25,75 +22,49 @@ public abstract class AbstractStrategy implements IPoloniexBotLendingStrategy {
 
     protected IPoloniexApi api;
     protected SettingsHelper settings;
-    protected ICalculator calculator;
 
     protected HashSet<IPoloniexStrategyListener> listeners = new HashSet<>();
     protected Logger log;
 
-    public AbstractStrategy(Logger log, IPoloniexApi api, SettingsHelper settings, ICalculator calculator){
+    public AbstractStrategy(Logger log, IPoloniexApi api, SettingsHelper settings){
         this.api = api;
         this.settings = settings;
-        this.calculator = calculator;
         this.log = log;
     }
 
-    abstract void hasFreeBalance(AggregatorDto information, CurrencyValue balance, String currencyName);
+    protected abstract void hasFreeBalance(CurrencyInformationItem information);
 
-    abstract void hasOpenedOffers(AggregatorDto information, OpenedLoanOfferEntity openedLoanOfferEntity, String currencyName);
+    protected abstract void hasOpenedOffers(CurrencyInformationItem information);
 
     @Override
-    public void start(AggregatorDto information) {
+    public void start(CurrencyInformationIterator information) {
 
         //Notify listeners about starting analyze
         for (IPoloniexStrategyListener listener : listeners) {
             try {
                 listener.onStart(information);
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
             }
         }
 
-        if (!validate(information)){
-            return;
-        }
+        while (information.hasNext()) {
+            CurrencyInformationItem item = information.next();
 
-        Map<String, CurrencyValue> lendingBalances = information.getBalances().getLending();
+            List<OfferEntity> offers = item.getOffers();
 
+            if (offers.size() > 0) {
+                CurrencyValue balance = item.getAvailableBalance();
+                boolean hasFreeBalance = balance.compareTo(CurrencyValue.ZERO) > 0;
 
-        for (String currency : settings.getCurrencies()) {
-            try {
-                LoanOrdersEntity loanOrders = information.getLoanOrders().get(currency);
-
-                if (loanOrders == null || loanOrders.getOfferEntities() == null){
-                    log.warn("No loan orders!");
-                    break;
-                }
-
-                boolean hasFreeBalance = (
-                        lendingBalances.containsKey(currency) &&
-                                lendingBalances.get(currency).compareTo(CurrencyValue.ZERO) > 0
-                );
-
-                //If there is a currency on the balance sheet
                 if (hasFreeBalance) {
-                    CurrencyValue lendingBalance = lendingBalances.get(currency);
-                    hasFreeBalance(information, lendingBalance, currency);
+                    hasFreeBalance(item);
                 }
 
                 //If exists opened loan offers
-                if (information.getOpenedLoanOffers() != null && information.getOpenedLoanOffers().size() > 0){
-                    final Map<String, List<OpenedLoanOfferEntity>> openedLoanOffers = information.getOpenedLoanOffers();
-                    if (openedLoanOffers != null && openedLoanOffers.containsKey(currency)){
-                        final List<OpenedLoanOfferEntity> openedLoanOfferEntities = openedLoanOffers.get(currency);
-
-                        for (OpenedLoanOfferEntity openedLoanOfferEntity : openedLoanOfferEntities) {
-                            hasOpenedOffers(information, openedLoanOfferEntity, currency);
-                        }
-                    }
+                if (item.getOpenedLoanOffers().size() > 0) {
+                    hasOpenedOffers(item);
                 }
-
-            } catch (Exception e){
-                log.debug(e.getMessage(), e);
             }
         }
     }
@@ -153,19 +124,5 @@ public abstract class AbstractStrategy implements IPoloniexBotLendingStrategy {
         }
 
         return result;
-    }
-
-    private boolean validate(AggregatorDto information) {
-        if (information.getBalances() == null || information.getBalances().getLending() == null){
-            log.warn("No balances");
-            return false;
-        }
-
-        if (information.getLoanOrders() == null){
-            log.warn("No loan orders");
-            return false;
-        }
-
-        return true;
     }
 }

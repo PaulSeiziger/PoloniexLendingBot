@@ -1,9 +1,8 @@
 package com.dremanovich.lendingbot.bot.listeners;
 
-import com.dremanovich.lendingbot.api.entities.AvailableAccountBalancesEntity;
 import com.dremanovich.lendingbot.api.entities.OpenedLoanOfferEntity;
-import com.dremanovich.lendingbot.bot.AggregatorDto;
-import com.dremanovich.lendingbot.bot.calculators.ICalculator;
+import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
+import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
 import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;
@@ -14,8 +13,6 @@ import org.apache.logging.log4j.MarkerManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 
 public class LoggerStrategyListener implements IPoloniexStrategyListener {
@@ -26,68 +23,45 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
 
     private Logger log;
     private SettingsHelper settingsHelper;
-    private ICalculator calculator;
 
-    public LoggerStrategyListener(Logger log, SettingsHelper settingsHelper, ICalculator calculator) {
+    public LoggerStrategyListener(Logger log, SettingsHelper settingsHelper) {
         this.log = log;
         this.settingsHelper = settingsHelper;
-        this.calculator = calculator;
     }
 
     @Override
-    public void onStart(AggregatorDto information) {
+    public void onStart(CurrencyInformationIterator information) {
 
-        if(information == null){
-            return;
-        }
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date date = new Date();
 
-        AvailableAccountBalancesEntity balances = information.getBalances();
+        log.trace(statisticMarker, "\r\nDate: " + dateFormat.format(date));
+        log.trace(statisticMarker, "Balances:\r\n");
 
-        if ((balances != null) && (balances.getLending() != null)){
-            DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-            Date date = new Date();
+        while (information.hasNext()) {
+            CurrencyInformationItem item = information.next();
 
-            log.trace(statisticMarker, "\r\nDate: " + dateFormat.format(date));
-            log.trace(statisticMarker, "Balances:\r\n");
+            log.trace(statisticMarker, "Currency: " + item.getCurrencyName());
+            if (item.getAvailableBalance() != null){
+                log.trace(statisticMarker, "Balance: " + item.getAvailableBalance().toString());
+            } else {
+                log.trace(statisticMarker, "Balance: 0.0");
+            }
 
-            Map<String, CurrencyValue> lendingBalances = information.getBalances().getLending();
-
-            for (String currency : settingsHelper.getCurrencies()) {
-
-                log.trace(statisticMarker, "Currency: " + currency);
-                if (lendingBalances.containsKey(currency)){
-                    log.trace(statisticMarker, "Balance: " + lendingBalances.get(currency));
-                } else {
-                    log.trace(statisticMarker, "Balance: 0.0");
-                }
-
-                if (
-                        information.getLoanOrders() != null &&
-                                information.getLoanOrders().get(currency) != null
-                    ){
-                    int countOffersForAverage = settingsHelper.getCountOffersForAverageCalculating();
-                    RateValue average = calculator.calculateAverageRateByOffers(
-                            information.getLoanOrders().get(currency).getOfferEntities(),
-                            countOffersForAverage
-                    );
-
-                    log.trace(statisticMarker, "Average offer: " + average.toPercentString());
-                } else {
-                    log.trace(statisticMarker, "No offers!");
-                }
-
-                log.trace(statisticMarker, "\r\n******************************************************************");
+            int countOffersForAverage = settingsHelper.getCountOffersForAverageCalculating();
+            log.trace(
+                statisticMarker,
+                "Average offer: " + item.calculateAverageRateByOffers(
+                        countOffersForAverage
+                ).toPercentString()
+            );
 
 
-                List<OpenedLoanOfferEntity> openedLoanOffers = information.getOpenedLoanOffers().get(currency);
-                if (openedLoanOffers != null){
-                    for (OpenedLoanOfferEntity offer : openedLoanOffers){
-                        log.trace(statisticMarker, "Rate: " + offer.getRate().toPercentString() + "; Amount: " + offer.getAmount() + "; Duration: " + offer.getDuration() + "; Date" + offer.getDate() );
-                    }
-                } else {
-                    log.trace(statisticMarker, "No opened orders!");
-                }
-                log.trace(statisticMarker, "-----------------------------------------------------------------\r\n");
+            log.trace(statisticMarker, "\r\n******************************************************************");
+
+
+            for (OpenedLoanOfferEntity offer : item.getOpenedLoanOffers()){
+                log.trace(statisticMarker, "Rate: " + offer.getRate().toPercentString() + "; Amount: " + offer.getAmount() + "; Duration: " + offer.getDuration() + "; Date" + offer.getDate() );
             }
 
             log.trace(statisticMarker, "=============================================================================\r\n");
