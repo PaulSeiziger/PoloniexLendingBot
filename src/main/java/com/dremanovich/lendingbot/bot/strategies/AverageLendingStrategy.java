@@ -17,11 +17,10 @@ public class AverageLendingStrategy extends AbstractStrategy{
     }
 
     @Override
-    void hasFreeBalance(CurrencyInformationItem item) {
+    protected void hasFreeBalance(CurrencyInformationItem item) {
 
         RateValue lendingRate = calculateRate(item);
 
-        //Check rate that more than ABSOLUTE_MINIMUM_LENDING_RATE
         if (lendingRate.compareTo(ABSOLUTE_MINIMUM_LENDING_RATE) > 0){
             //We expose all available balance and make an offer at the calculated rate
             try {
@@ -33,7 +32,7 @@ public class AverageLendingStrategy extends AbstractStrategy{
     }
 
     @Override
-    void hasOpenedOffers(CurrencyInformationItem item) {
+    protected void hasOpenedOffers(CurrencyInformationItem item) {
         //If we find a still open offer, we check how much time has passed since the opening
         long currentTime = System.currentTimeMillis();
         int waitingTime = settings.getWaitBeforeReopenOffer();

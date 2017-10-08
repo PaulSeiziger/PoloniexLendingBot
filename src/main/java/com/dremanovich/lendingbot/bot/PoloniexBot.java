@@ -100,7 +100,7 @@ public class PoloniexBot {
             ctor = loadedClass.getConstructor(Logger.class, IPoloniexApi.class, SettingsHelper.class);
             strategy = (IPoloniexBotLendingStrategy)ctor.newInstance(log, api, settings);
             strategy.addStrategyListener(new LoggerStrategyListener(log, settings));
-            strategy.addStrategyListener(new LoggerAverageStatisticListener(log, settings));
+            strategy.addStrategyListener(new LoggerAverageStatisticListener(log));
 
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             e.printStackTrace();

@@ -1,11 +1,11 @@
 package com.dremanovich.lendingbot.bot.listeners;
 
-import com.dremanovich.lendingbot.api.entities.OfferEntity;
 import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
 import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
 import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
@@ -13,7 +13,6 @@ import org.apache.logging.log4j.MarkerManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 
 public class LoggerAverageStatisticListener implements IPoloniexStrategyListener {
@@ -21,11 +20,9 @@ public class LoggerAverageStatisticListener implements IPoloniexStrategyListener
     private static final int averageItemCount = 20;
 
     private Logger log;
-    private SettingsHelper settingsHelper;
 
-    public LoggerAverageStatisticListener(Logger log, SettingsHelper settingsHelper) {
+    public LoggerAverageStatisticListener(Logger log) {
         this.log = log;
-        this.settingsHelper = settingsHelper;
 
         log.trace(averagesMarker, "День;Дата и время;Валюта;Среднее;Минимальное;Максимальное");
     }

@@ -15,7 +15,6 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractStrategy implements IPoloniexBotLendingStrategy {
     protected static final RateValue ABSOLUTE_MINIMUM_LENDING_RATE = new RateValue(0.0000001);

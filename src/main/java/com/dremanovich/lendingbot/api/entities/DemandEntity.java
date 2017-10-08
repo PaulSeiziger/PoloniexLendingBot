@@ -1,6 +1,4 @@
-
 package com.dremanovich.lendingbot.api.entities;
-
 
 import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;

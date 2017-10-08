@@ -6,7 +6,6 @@ import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class CurrencyInformationItem {
     private String curencyName;
