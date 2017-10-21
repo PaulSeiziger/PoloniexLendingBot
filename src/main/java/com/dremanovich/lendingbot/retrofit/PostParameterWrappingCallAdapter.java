@@ -8,13 +8,13 @@ import retrofit2.CallAdapter;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class PostParameterWrappingCallAdapter<RETURN_TYPE> implements CallAdapter<RETURN_TYPE> {
+public class PostParameterWrappingCallAdapter<T> implements CallAdapter<T> {
 
-    private final CallAdapter<RETURN_TYPE> adapter;
+    private final CallAdapter<T> adapter;
     private final Map<Integer, PostParameter> registration;
     private final PostParameter info;
 
-    PostParameterWrappingCallAdapter(CallAdapter<RETURN_TYPE> adapter, Map<Integer, PostParameter> reg, PostParameter info) {
+    PostParameterWrappingCallAdapter(CallAdapter<T> adapter, Map<Integer, PostParameter> reg, PostParameter info) {
         this.adapter = adapter;
         this.registration = reg;
         this.info = info;
@@ -26,7 +26,7 @@ public class PostParameterWrappingCallAdapter<RETURN_TYPE> implements CallAdapte
     }
 
     @Override
-    public <R> RETURN_TYPE adapt(Call<R> call) {
+    public <R> T adapt(Call<R> call) {
         Request request = call.request();
         registration.put(identify(request), info);
         return adapter.adapt(call);
