@@ -1,8 +1,8 @@
 package com.dremanovich.lendingbot.bot.listeners;
 
+import com.dremanovich.lendingbot.bot.AggregatorResult;
 import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
 import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
-import com.dremanovich.lendingbot.helpers.SettingsHelper;
 import com.dremanovich.lendingbot.types.CurrencyValue;
 import com.dremanovich.lendingbot.types.RateValue;
 
@@ -28,10 +28,12 @@ public class LoggerAverageStatisticListener implements IPoloniexStrategyListener
     }
 
     @Override
-    public void onStart(CurrencyInformationIterator information) {
-        if (information == null){
+    public void onStart(AggregatorResult result) {
+        if (result == null){
             return;
         }
+
+        CurrencyInformationIterator information = result.getIterator();
 
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         DateFormat dateDayInWeekFormat = new SimpleDateFormat("E");

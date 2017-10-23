@@ -16,7 +16,7 @@
     "lendingDays" : 2,
     "waitBeforeReopenOffer": 1200,
     "averageOfferMinimumThresholds":{
-      "BTC": 0.2
+      "BTC": 0.0009
     }
   }
 }

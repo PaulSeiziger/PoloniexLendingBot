@@ -3,6 +3,7 @@ package com.dremanovich.lendingbot.bot.strategies;
 
 import com.dremanovich.lendingbot.api.IPoloniexApi;
 import com.dremanovich.lendingbot.api.entities.*;
+import com.dremanovich.lendingbot.bot.AggregatorResult;
 import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
 import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
 import com.dremanovich.lendingbot.bot.listeners.IPoloniexStrategyListener;
@@ -36,16 +37,18 @@ public abstract class AbstractStrategy implements IPoloniexBotLendingStrategy {
     protected abstract void hasOpenedOffers(CurrencyInformationItem information);
 
     @Override
-    public void start(CurrencyInformationIterator information) {
+    public void start(AggregatorResult result) {
 
         //Notify listeners about starting analyze
         for (IPoloniexStrategyListener listener : listeners) {
             try {
-                listener.onStart(information);
+                listener.onStart(result);
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
             }
         }
+
+        CurrencyInformationIterator information = result.getIterator();
 
         while (information.hasNext()) {
             CurrencyInformationItem item = information.next();

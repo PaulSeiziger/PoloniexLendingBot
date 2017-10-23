@@ -1,6 +1,7 @@
 package com.dremanovich.lendingbot.bot.listeners;
 
 import com.dremanovich.lendingbot.api.entities.OpenedLoanOfferEntity;
+import com.dremanovich.lendingbot.bot.AggregatorResult;
 import com.dremanovich.lendingbot.bot.CurrencyInformationItem;
 import com.dremanovich.lendingbot.bot.CurrencyInformationIterator;
 import com.dremanovich.lendingbot.helpers.SettingsHelper;
@@ -30,13 +31,15 @@ public class LoggerStrategyListener implements IPoloniexStrategyListener {
     }
 
     @Override
-    public void onStart(CurrencyInformationIterator information) {
+    public void onStart(AggregatorResult result) {
 
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         Date date = new Date();
 
         log.trace(statisticMarker, "\r\nDate: " + dateFormat.format(date));
         log.trace(statisticMarker, "Balances:\r\n");
+
+        CurrencyInformationIterator information = result.getIterator();
 
         while (information.hasNext()) {
             CurrencyInformationItem item = information.next();
